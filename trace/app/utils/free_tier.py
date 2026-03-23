@@ -91,6 +91,6 @@ def get_upgrade_message(limit_type: str) -> str:
     messages = {
         "concepts": "You have reached the free tier concept limit. Upgrade to Pro for unlimited concepts and faster reviews.",
         "imports": "You have used all free imports for this month. Upgrade to Pro to import without limits.",
-        "extractions": "You've hit the AI extraction limit. Upgrade to Pro for unlimited Gemini concept extraction.",
+        "extractions": "You've hit the AI extraction limit. Upgrade to Pro for unlimited AI concept extraction.",
     }
     return messages.get(limit_type, "Upgrade to Trace Pro to remove free tier limits and unlock advanced features.")

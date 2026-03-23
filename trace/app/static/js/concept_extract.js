@@ -209,7 +209,7 @@ function submitConceptsForm(event) {
 
 function initProcessingPolling(itemId) {
   const messages = [
-    'Analyzing your content with Gemini AI...',
+    'Analyzing your content with AI...',
     'Identifying key frameworks and principles...',
     'Finding the most retrievable knowledge units...',
     'Almost ready...'

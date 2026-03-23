@@ -7,7 +7,7 @@ from ..extensions import mail
 
 
 def _base_url() -> str:
-    return os.getenv("BASE_URL", "https://trace.onrender.com/")
+    return os.getenv("BASE_URL", "https://trace-aiz6.onrender.com")
 
 
 def _send_email(user, subject: str, html_template: str, text_template: str = None, **context):

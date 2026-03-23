@@ -75,7 +75,7 @@ def index():
             "role": "Product Director",
         },
         {
-            "quote": "The concept extraction saves me hours. I import an article, Gemini pulls out the key ideas, I confirm them, and they're in my review queue. The daily sessions take 10 minutes and actually work.",
+            "quote": "The concept extraction saves me hours. I import an article, AI pulls out the key ideas, I confirm them, and they're in my review queue. The daily sessions take 10 minutes and actually work.",
             "name": "Karan P.",
             "role": "Software Engineer",
         },

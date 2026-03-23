@@ -37,7 +37,7 @@ def generate_single_application_prompt(concept: Concept, project: Project) -> st
             prompt,
             context_label="application_prompt",
         )
-        print(f"[APPLICATION PROMPT] Raw Gemini response: {response_text}")
+        print(f"[APPLICATION PROMPT] Raw AI response: {response_text}")
 
         if response_text is None:
             print(f"[{function_label}] COMPLETED WITH FALLBACK | Reason: response is None")

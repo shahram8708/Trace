@@ -3,7 +3,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 from flask_migrate import upgrade
 from trace.app import create_app
-from trace.app.config import DevelopmentConfig
+from trace.app.config import DevelopmentConfig, ProductionConfig
 from trace.app.extensions import db
 
 
@@ -11,8 +11,11 @@ env_path = Path(__file__).resolve().parent / ".env"
 load_dotenv(env_path, override=False)
 
 
+config_class = ProductionConfig if os.getenv("FLASK_ENV") == "production" else DevelopmentConfig
+app = create_app(config_class)
+
+
 def main():
-    app = create_app(DevelopmentConfig)
     with app.app_context():
         migrations_path = os.path.join(os.path.dirname(__file__), "migrations")
         if os.path.isdir(migrations_path):
