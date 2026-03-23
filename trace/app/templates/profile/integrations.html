@@ -1,0 +1,61 @@
+{% extends 'dashboard_base.html' %}
+{% block title %}Integrations{% endblock %}
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb" class="mb-3">
+  <ol class="breadcrumb mb-0">
+    <li class="breadcrumb-item"><a href="{{ url_for('dashboard_bp.dashboard') }}">Dashboard</a></li>
+    <li class="breadcrumb-item"><a href="{{ url_for('profile_bp.settings_account') }}">Settings</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Integrations</li>
+  </ol>
+</nav>
+{% endblock %}
+{% block dashboard_content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div>
+    <h2 class="mb-0">Integrations</h2>
+    <div class="text-muted">Connect Trace with your favorite tools.</div>
+  </div>
+</div>
+
+<ul class="nav settings-nav mb-4 flex-wrap">
+  <li class="nav-item"><a class="nav-link" href="{{ url_for('profile_bp.settings_account') }}">Account</a></li>
+  <li class="nav-item"><a class="nav-link" href="{{ url_for('profile_bp.billing') }}">Billing</a></li>
+  <li class="nav-item"><a class="nav-link" href="{{ url_for('profile_bp.notifications') }}">Notifications</a></li>
+  <li class="nav-item"><a class="nav-link active" href="#">Integrations</a></li>
+  <li class="nav-item"><a class="nav-link" href="{{ url_for('profile_bp.delete_account') }}">Delete</a></li>
+</ul>
+
+<div class="row g-3">
+  <div class="col-lg-4">
+    <div class="settings-card p-4 h-100">
+      <h6 class="mb-2">Status</h6>
+      <p class="text-muted small mb-3">Razorpay is connected for billing. Additional connectors are rolling out soon.</p>
+      <a class="btn btn-outline-primary w-100" href="{{ url_for('main.contact') }}">Request an integration</a>
+      <div class="alert alert-info mt-3 mb-0 small">
+        Need SSO or SCIM? Drop us a note and we'll prioritize your org setup.
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-8">
+    <div class="row g-3">
+      {% set integrations = [
+        ('Chrome/Edge Extension', 'Capture highlights and send to Trace instantly.', 'Available'),
+        ('Notion Import', 'Sync pages into your concept library.', 'Beta waitlist'),
+        ('Slack', 'Review nudges in your team channel.', 'Planned'),
+        ('Google Drive', 'Pull PDFs and docs directly.', 'Planned'),
+      ] %}
+      {% for name, desc, status in integrations %}
+      <div class="col-md-6">
+        <div class="settings-card p-3 h-100">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <div class="fw-semibold">{{ name }}</div>
+            <span class="badge {{ 'bg-success' if status=='Available' else 'bg-warning text-dark' }}">{{ status }}</span>
+          </div>
+          <p class="text-muted small mb-0">{{ desc }}</p>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

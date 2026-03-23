@@ -1,0 +1,217 @@
+{% extends 'base.html' %}
+{% block title %}Home{% endblock %}
+{% block content %}
+<section class="hero-section d-flex align-items-center" style="min-height:100vh; background: var(--color-background);">
+  <div class="container py-5">
+    <div class="row align-items-center g-5">
+      <div class="col-lg-6">
+        <div class="badge bg-light text-success rounded-pill mb-3 px-3 py-2">Powered by cognitive science</div>
+        <h1 class="display-5 fw-bold text-brand mb-3">You read it. You watched it. Where did it go?</h1>
+        <p class="lead text-muted mb-4">Trace turns your daily reading and learning into permanent professional expertise using proven retention science. Stop forgetting. Start building expertise that actually lasts.</p>
+        <div class="d-flex flex-column flex-sm-row align-items-sm-center gap-3 mb-3">
+          <a class="btn btn-brand btn-lg px-4 py-3" href="{{ url_for('auth.signup') }}">Start for Free — No credit card needed</a>
+          <a class="text-brand fw-semibold" href="{{ url_for('main.how_it_works') }}">See how it works →</a>
+        </div>
+        <div class="d-flex align-items-center gap-3">
+          <div class="d-flex">
+            <div class="avatar-sm bg-primary text-muted fw-bold rounded-circle me-1">S</div>
+            <div class="avatar-sm bg-success text-muted fw-bold rounded-circle me-1">K</div>
+            <div class="avatar-sm bg-warning text-dark fw-bold rounded-circle">D</div>
+          </div>
+          <p class="mb-0 text-muted">3,800+ professionals building lasting expertise</p>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <svg viewBox="0 0 520 360" class="w-100" aria-label="Trace concept flow illustration">
+          <defs>
+            <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#1B4F72" />
+              <stop offset="100%" stop-color="#148F77" />
+            </linearGradient>
+          </defs>
+          <rect x="30" y="40" width="160" height="90" rx="14" fill="#fff" stroke="#E5E7EB" stroke-width="2"/>
+          <text x="50" y="80" fill="#1B4F72" font-size="18" font-weight="700">Document</text>
+          <rect x="220" y="30" width="60" height="60" rx="12" fill="#D1F2EB" />
+          <rect x="220" y="100" width="60" height="60" rx="12" fill="#D1F2EB" />
+          <rect x="220" y="170" width="60" height="60" rx="12" fill="#D1F2EB" />
+          <path d="M190 85 L220 60" stroke="#1B4F72" stroke-width="3" marker-end="url(#arrow)" />
+          <path d="M190 85 L220 130" stroke="#1B4F72" stroke-width="3" marker-end="url(#arrow)" />
+          <path d="M190 85 L220 200" stroke="#1B4F72" stroke-width="3" marker-end="url(#arrow)" />
+          <rect x="320" y="60" width="150" height="90" rx="14" fill="#fff" stroke="#E5E7EB" stroke-width="2" />
+          <text x="340" y="100" fill="#1B4F72" font-size="18" font-weight="700">Concepts</text>
+          <rect x="340" y="115" width="110" height="20" rx="10" fill="#D1F2EB" />
+          <path d="M280 90 L320 100" stroke="#148F77" stroke-width="3" marker-end="url(#arrow)" />
+          <path d="M280 140 L320 120" stroke="#148F77" stroke-width="3" marker-end="url(#arrow)" />
+          <rect x="320" y="190" width="150" height="120" rx="14" fill="#fff" stroke="#E5E7EB" stroke-width="2" />
+          <text x="340" y="220" fill="#1B4F72" font-size="18" font-weight="700">Retention</text>
+          <polyline points="340,270 360,250 380,260 400,230 420,240 440,210" fill="none" stroke="url(#grad)" stroke-width="4" />
+          <circle cx="440" cy="210" r="5" fill="#148F77" />
+          <defs>
+            <marker id="arrow" markerWidth="10" markerHeight="10" refX="5" refY="5" orient="auto" markerUnits="strokeWidth">
+              <path d="M0,0 L0,10 L10,5 z" fill="#148F77" />
+            </marker>
+          </defs>
+        </svg>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="py-5 bg-white">
+  <div class="container">
+    <h2 class="text-center fw-bold mb-4">Does this sound familiar?</h2>
+    <div class="row g-4">
+      <div class="col-md-4 text-center">
+        <div class="display-5 mb-2">📚</div>
+        <h5 class="fw-semibold">You finished the book. You can't explain it.</h5>
+        <p class="text-muted">You invested 8 hours reading something that felt transformative. Three months later, the main idea is a blur.</p>
+      </div>
+      <div class="col-md-4 text-center">
+        <div class="display-5 mb-2">🎓</div>
+        <h5 class="fw-semibold">You completed the course. You can't apply it.</h5>
+        <p class="text-muted">The quiz showed 85%. But when the real situation came up at work, the framework wasn't there.</p>
+      </div>
+      <div class="col-md-4 text-center">
+        <div class="display-5 mb-2">📋</div>
+        <h5 class="fw-semibold">Your notes exist. You never open them.</h5>
+        <p class="text-muted">Notion has 300 notes. Pocket has 400 saves. None of it is accessible when you actually need it.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="py-5" style="background:#F3F4F6;">
+  <div class="container text-center">
+    <h2 class="fw-bold">How Trace Works</h2>
+    <p class="text-muted mb-5">Three steps to turn reading into lasting expertise</p>
+    <div class="row g-4 align-items-start position-relative">
+      <div class="col-md-4">
+        <div class="card card-lift h-100 p-4 text-start">
+          <div class="d-flex align-items-center mb-3">
+            <div class="step-number me-3">01</div>
+            <i class="bi bi-cloud-upload-fill fs-4 text-primary"></i>
+          </div>
+          <h5 class="fw-bold">Import Anything</h5>
+          <p class="text-muted">Paste a URL, upload a PDF, paste text, or import your Kindle highlights. Trace extracts the content and surfaces the key concepts using Gemini AI.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card card-lift h-100 p-4 text-start">
+          <div class="d-flex align-items-center mb-3">
+            <div class="step-number me-3">02</div>
+            <i class="bi bi-arrow-repeat fs-4 text-primary"></i>
+          </div>
+          <h5 class="fw-bold">Review Daily</h5>
+          <p class="text-muted">Your personalized review queue surfaces the right concepts at the right time. You recall them in your own words — that's what builds permanent memory.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card card-lift h-100 p-4 text-start">
+          <div class="d-flex align-items-center mb-3">
+            <div class="step-number me-3">03</div>
+            <i class="bi bi-lightning-charge-fill fs-4 text-primary"></i>
+          </div>
+          <h5 class="fw-bold">Apply and Connect</h5>
+          <p class="text-muted">As your concept library grows, Trace connects your knowledge and reminds you to apply it in your actual work projects.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="py-5 bg-white">
+  <div class="container text-center">
+    <h2 class="fw-bold mb-4">Everything you need to actually retain what you learn</h2>
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div class="card card-lift h-100 p-4 text-start">
+          <div class="mb-3"><i class="bi bi-brain fs-3 text-primary"></i></div>
+          <h5 class="fw-bold">Spaced Retrieval Practice</h5>
+          <p class="text-muted">Not passive re-reading. Active recall using the SM-2 algorithm — the same science behind Anki and SuperMemo. You reconstruct knowledge from memory, building connections that last.</p>
+          <span class="badge bg-success">Core Science</span>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card card-lift h-100 p-4 text-start">
+          <div class="mb-3"><i class="bi bi-diagram-3-fill fs-3 text-primary"></i></div>
+          <h5 class="fw-bold">Knowledge Connection Map</h5>
+          <p class="text-muted">See how concepts from different sources connect. Draw relationships between ideas. Build a genuine mental model, not a collection of isolated facts.</p>
+          <span class="badge bg-info text-dark">Pro Feature</span>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card card-lift h-100 p-4 text-start">
+          <div class="mb-3"><i class="bi bi-bell-fill fs-3 text-primary"></i></div>
+          <h5 class="fw-bold">Application Reminders</h5>
+          <p class="text-muted">Link your learning to real projects. Get AI-powered prompts that connect your retained concepts to what you're actually working on — closing the loop between learning and doing.</p>
+          <span class="badge bg-info text-dark">Pro Feature</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="py-5" style="background:#FAFAF8;">
+  <div class="container text-center">
+    <h2 class="fw-bold mb-4">Professionals who stopped forgetting</h2>
+    <div class="row g-4">
+      {% for t in testimonials %}
+      <div class="col-md-4">
+        <div class="card h-100 p-4 text-start border-start border-4 border-success card-lift">
+          <div class="mb-3 text-success"><i class="bi bi-quote"></i></div>
+          <p class="fst-italic">{{ t.quote }}</p>
+          <div class="fw-bold">{{ t.name }}</div>
+          <div class="text-muted small">{{ t.role }}</div>
+          <div class="text-warning mt-2">★★★★★</div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="py-5 bg-white">
+  <div class="container text-center">
+    <h2 class="fw-bold mb-4">Simple, transparent pricing</h2>
+    <div class="row g-4 justify-content-center">
+      <div class="col-md-4">
+        <div class="card h-100 p-4 text-start card-lift">
+          <div class="text-muted">Free</div>
+          <h3 class="fw-bold">₹0<span class="fs-6 text-muted">/month</span></h3>
+          <ul class="list-unstyled text-muted mb-4">
+            <li>Up to 50 concepts</li>
+            <li>5 imports/month</li>
+            <li>Daily review queue</li>
+          </ul>
+          <a class="btn btn-outline-primary w-100" href="{{ url_for('auth.signup') }}">Start for Free</a>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card h-100 p-4 text-start card-lift border-primary" style="box-shadow:0 12px 40px rgba(0,0,0,0.12);">
+          <div class="d-flex align-items-center justify-content-between">
+            <div class="text-muted">Pro Monthly</div>
+            <span class="badge bg-primary">Most Popular</span>
+          </div>
+          <h3 class="fw-bold">₹999<span class="fs-6 text-muted">/month</span></h3>
+          <ul class="list-unstyled text-muted mb-4">
+            <li>Unlimited concepts & imports</li>
+            <li>AI concept extraction</li>
+            <li>Knowledge Map + Application reminders</li>
+          </ul>
+          <a class="btn btn-brand w-100" href="{{ url_for('main.pricing') }}">Upgrade to Pro</a>
+        </div>
+      </div>
+    </div>
+    <div class="mt-3"><a href="{{ url_for('main.pricing') }}">See full pricing details →</a></div>
+  </div>
+</section>
+
+<section class="py-5 text-white" style="background:#0F2D45;">
+  <div class="container text-center">
+    <h2 class="fw-bold mb-3">Stop forgetting. Start building.</h2>
+    <p class="mb-4">Join 3,800+ professionals who are turning their daily learning into permanent expertise.</p>
+    <a class="btn btn-light btn-lg rounded-pill px-4" href="{{ url_for('auth.signup') }}">Start for Free</a>
+    <div class="small text-white mt-2">No credit card required. Free forever plan available.</div>
+  </div>
+</section>
+{% endblock %}

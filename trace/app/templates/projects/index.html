@@ -1,0 +1,58 @@
+{% extends 'dashboard_base.html' %}
+{% block title %}Projects{% endblock %}
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb" class="mb-3">
+  <ol class="breadcrumb mb-0">
+    <li class="breadcrumb-item"><a href="{{ url_for('dashboard_bp.dashboard') }}">Dashboard</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Projects</li>
+  </ol>
+</nav>
+{% endblock %}
+{% block dashboard_content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h2 class="mb-1">My Projects</h2>
+    <p class="text-muted mb-0">Connect your learning to real work.</p>
+  </div>
+  <a class="btn btn-primary" href="{{ url_for('projects_bp.new') }}">New Project →</a>
+</div>
+
+{% if projects|length == 0 %}
+  <div class="card border-dashed text-center p-5">
+    <h5>Projects connect your learning to your work.</h5>
+    <p class="text-muted">Create a project and Trace will surface relevant concepts and generate application prompts when knowledge applies.</p>
+    <div class="d-flex gap-2 justify-content-center flex-wrap">
+      <a class="btn btn-success" href="{{ url_for('projects_bp.new') }}">Create Your First Project</a>
+      <a class="btn btn-outline-primary" href="{{ url_for('import_bp.hub') }}">Import content to match</a>
+    </div>
+  </div>
+{% else %}
+  <div class="row row-cols-1 row-cols-md-2 g-3">
+    {% for project in projects %}
+    <div class="col">
+      <div class="card h-100 shadow-sm">
+        <div class="card-body d-flex flex-column">
+          <div class="d-flex justify-content-between align-items-start mb-2">
+            <h5 class="card-title mb-0">{{ project.name }}</h5>
+            <span class="badge {{ 'bg-success' if project.is_active else 'bg-secondary' }}">{{ 'Active' if project.is_active else 'Inactive' }}</span>
+          </div>
+          <p class="card-text text-muted">{{ project.description|default('No description yet.', true)|truncate(120) }}</p>
+          <div class="mb-2">
+            {% for tag in project.domain_tags or [] %}
+              <span class="badge rounded-pill bg-light text-dark me-1 mb-1">{{ tag }}</span>
+            {% endfor %}
+          </div>
+          <div class="d-flex justify-content-between align-items-center mt-auto">
+            <div class="small text-muted">{{ matched_counts.get(project.id, 0) }} concepts matched</div>
+            <div class="d-flex gap-2">
+              <a class="btn btn-outline-primary btn-sm" href="{{ url_for('projects_bp.detail', project_id=project.id) }}">View Project →</a>
+              <a class="btn btn-link btn-sm" href="{{ url_for('projects_bp.detail', project_id=project.id) }}">Edit</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+{% endif %}
+{% endblock %}

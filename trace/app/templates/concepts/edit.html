@@ -1,0 +1,39 @@
+{% extends 'dashboard_base.html' %}
+{% from 'macros/forms.html' import render_field %}
+{% block title %}Edit Concept{% endblock %}
+{% block head_extra %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+{% endblock %}
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb" class="mb-3">
+  <ol class="breadcrumb mb-0">
+    <li class="breadcrumb-item"><a href="{{ url_for('dashboard_bp.dashboard') }}">Dashboard</a></li>
+    <li class="breadcrumb-item"><a href="{{ url_for('concepts_bp.library') }}">My Concepts</a></li>
+    <li class="breadcrumb-item"><a href="{{ url_for('concepts_bp.detail', concept_id=concept.id) }}">{{ concept.name }}</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Edit</li>
+  </ol>
+</nav>
+{% endblock %}
+{% block dashboard_content %}
+
+<div class="card border-0 shadow-sm">
+  <div class="card-body">
+    <h4 class="fw-bold mb-3">Edit Concept</h4>
+    <form method="post">
+      <div class="d-none" aria-hidden="true">{{ form.hidden_tag() }}</div>
+      {{ render_field(form.name) }}
+      {{ render_field(form.description, rows=5) }}
+      {{ render_field(form.domain_tag) }}
+      <div class="mb-3">
+        <label class="form-label">Current Excerpt</label>
+        <blockquote class="small text-muted mb-0">{{ concept.source_excerpt or 'No excerpt provided.' }}</blockquote>
+      </div>
+      {{ render_field(form.source_excerpt, rows=4) }}
+      <div class="d-flex gap-2">
+        {{ form.submit(class_='btn btn-primary') }}
+        <a class="btn btn-outline-secondary" href="{{ url_for('concepts_bp.detail', concept_id=concept.id) }}">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

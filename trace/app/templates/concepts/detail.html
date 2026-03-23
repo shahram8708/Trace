@@ -1,0 +1,188 @@
+{% extends 'dashboard_base.html' %}
+{% block title %}Concept Detail{% endblock %}
+{% block head_extra %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" defer></script>
+<script src="{{ url_for('static', filename='js/charts.js') }}" defer></script>
+{% endblock %}
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb" class="mb-3">
+  <ol class="breadcrumb mb-0">
+    <li class="breadcrumb-item"><a href="{{ url_for('dashboard_bp.dashboard') }}">Dashboard</a></li>
+    <li class="breadcrumb-item"><a href="{{ url_for('concepts_bp.library') }}">My Concepts</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{{ concept.name }}</li>
+  </ol>
+</nav>
+{% endblock %}
+{% block dashboard_content %}
+
+<div class="d-flex justify-content-between align-items-start mb-3 flex-wrap gap-2">
+  <div>
+    <h2 class="fw-bold mb-1">{{ concept.name }}</h2>
+    <div class="d-flex gap-2 align-items-center flex-wrap">
+      <span class="domain-badge domain-{{ (concept.domain_tag or 'general')|lower|replace(' ', '-') }}">{{ concept.domain_tag or 'General' }}</span>
+      {% if concept.is_mature %}<span class="badge bg-success">Mature</span>{% endif %}
+      <span class="text-muted small">Created {{ concept.created_at|time_ago }}</span>
+      {% if concept.source_item %}<span class="text-muted small">Source: <a href="{{ url_for('library_bp.detail', source_id=concept.source_item.id) }}">{{ concept.source_item.title }}</a></span>{% endif %}
+    </div>
+  </div>
+  <div class="d-flex gap-2">
+    {% if concept.is_active %}
+      <form method="post" action="{{ url_for('concepts_bp.deactivate', concept_id=concept.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="btn btn-outline-danger">Deactivate</button>
+      </form>
+    {% else %}
+      <form method="post" action="{{ url_for('concepts_bp.reactivate', concept_id=concept.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="btn btn-success">Reactivate</button>
+      </form>
+    {% endif %}
+    <a class="btn btn-primary" href="{{ url_for('concepts_bp.edit', concept_id=concept.id) }}">Edit</a>
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-7">
+    <div class="card border-0 shadow-sm mb-3">
+      <div class="card-body">
+        <h5 class="fw-bold">Description</h5>
+        <p class="mb-0">{{ concept.description }}</p>
+      </div>
+    </div>
+    {% if concept.source_excerpt %}
+    <div class="card border-0 shadow-sm mb-3">
+      <div class="card-body">
+        <h6 class="fw-bold">Source Excerpt</h6>
+        <blockquote class="mb-0">{{ concept.source_excerpt }}</blockquote>
+      </div>
+    </div>
+    {% endif %}
+    {% if concept.source_item %}
+    <div class="card border-0 shadow-sm mb-3">
+      <div class="card-body d-flex justify-content-between align-items-center">
+        <div>
+          <div class="fw-bold">Source</div>
+          <div class="text-muted small">{{ concept.source_item.title }}</div>
+          <div class="text-muted small">{{ concept.source_item.source_type|capitalize }} • Imported {{ concept.source_item.import_date|time_ago }}</div>
+        </div>
+        <a class="btn btn-outline-primary btn-sm" href="{{ url_for('library_bp.detail', source_id=concept.source_item.id) }}">View source</a>
+      </div>
+    </div>
+    {% endif %}
+    <div class="card border-0 shadow-sm mb-3">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <h6 class="fw-bold mb-0">Connected Concepts</h6>
+          <span class="text-muted small">Knowledge map coming soon</span>
+        </div>
+        {% if connected_concepts %}
+          <div class="d-flex flex-column gap-2 mb-2">
+            {% for item in connected_concepts %}
+              <div class="p-2 border rounded">
+                <div class="fw-semibold"><a href="{{ url_for('concepts_bp.detail', concept_id=item.concept.id) }}">{{ item.concept.name }}</a></div>
+                <div class="text-muted small">{{ item.relationship_type }}</div>
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+        {% if suggested_connections %}
+          <div class="mt-2">
+            <div class="text-muted small mb-1">Suggested connections</div>
+            <div class="d-flex flex-column gap-2">
+              {% for item in suggested_connections %}
+                <div class="p-2 border rounded bg-light">
+                  <div class="fw-semibold"><a href="{{ url_for('concepts_bp.detail', concept_id=item.concept.id) }}">{{ item.concept.name }}</a></div>
+                  <div class="text-muted small">{{ item.relationship_type }}</div>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+        {% endif %}
+        {% if not connected_concepts and not suggested_connections %}
+          <div class="text-muted">No connections yet.</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-5">
+    <div class="card border-0 shadow-sm mb-3">
+      <div class="card-body">
+        <h6 class="fw-bold">Retention Strength</h6>
+        {% set pct = (concept.retention_strength or 0) * 100 %}
+        <div class="gauge" role="img" aria-label="Retention {{ pct|round(0) }}%">
+          <div class="gauge-circle" style="--percent: {{ pct|round(0) }}%;"></div>
+          <div class="gauge-label">{{ pct|round(0) }}%</div>
+        </div>
+        <div class="mt-3 small text-muted">Ease factor: {{ concept.sm2_ease_factor|round(2) }} • Interval: {{ concept.sm2_interval }} days • Total reviews: {{ concept.total_reviews }}</div>
+        <div class="small text-muted">Next review: {{ concept.next_review_due or 'Not scheduled' }} | Last reviewed: {{ concept.last_reviewed|time_ago if concept.last_reviewed else 'Never' }}</div>
+      </div>
+    </div>
+    <div class="card border-0 shadow-sm mb-3">
+      <div class="card-body">
+        <h6 class="fw-bold">Review History</h6>
+        <canvas id="retention-line" height="200"></canvas>
+        <div class="table-responsive mt-3">
+          <table class="table table-sm align-middle">
+            <thead><tr><th>Date</th><th>Quality</th><th>Interval</th></tr></thead>
+            <tbody>
+              {% for event in history[:10] %}
+                <tr>
+                  <td>{{ event.reviewed_at.strftime('%b %d, %Y') }}</td>
+                  <td>
+                    <span class="badge {% if event.quality_rating == 0 %}bg-danger{% elif event.quality_rating == 1 %}bg-warning text-dark{% elif event.quality_rating == 3 %}bg-success{% else %}bg-primary{% endif %}">
+                      {% if event.quality_rating == 0 %}Again{% elif event.quality_rating == 1 %}Hard{% elif event.quality_rating == 3 %}Good{% else %}Easy{% endif %}
+                    </span>
+                  </td>
+                  <td>{{ event.new_interval or '-' }} days</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="card border-0 shadow-sm">
+      <div class="card-body">
+        <h6 class="fw-bold">Application Events</h6>
+        {% if application_events %}
+          <ul class="list-unstyled mb-0">
+            {% for ev in application_events %}
+              <li class="mb-2">
+                <div class="fw-semibold">{{ ev.prompted_at.strftime('%b %d, %Y') }}</div>
+                <div class="text-muted small">{{ ev.prompt_text or 'Prompt' }}</div>
+                <div class="text-muted small">Response: {{ ev.user_response or 'Pending' }}</div>
+              </li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+        {% if suggested_application_prompts %}
+          <div class="mt-2">
+            <div class="text-muted small mb-1">Suggested prompts</div>
+            <ul class="list-unstyled mb-0">
+              {% for item in suggested_application_prompts %}
+                <li class="mb-2">
+                  <div class="fw-semibold">{{ item.project_name }}</div>
+                  <div class="text-muted small">{{ item.prompt_text }}</div>
+                </li>
+              {% endfor %}
+            </ul>
+          </div>
+        {% endif %}
+        {% if not application_events and not suggested_application_prompts %}
+          <div class="text-muted">No application events yet.</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const points = {{ retention_points|tojson }};
+    if (window.renderRetentionLineChart && points.length) {
+      window.renderRetentionLineChart('retention-line', points);
+    }
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,17 @@
+[Unit]
+Description=Trace Celery Worker
+After=network.target
+Requires=gunicorn.service
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/opt/trace
+EnvironmentFile=/opt/trace/.env
+ExecStart=/opt/trace/venv/bin/celery -A celery_worker.celery worker --loglevel=info --concurrency=4
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

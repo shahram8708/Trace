@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+{% block title %}Pricing{% endblock %}
+{% block head_extra %}
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+{% endblock %}
+{% block content %}
+<section class="py-5 bg-white">
+  <div class="container">
+    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center mb-4">
+      <div>
+        <h1 class="display-5 fw-bold">Simple pricing. Real expertise.</h1>
+        <p class="lead text-muted">Pick the plan that matches your ambition. Upgrade or cancel anytime.</p>
+      </div>
+      <div class="form-check form-switch">
+        <input class="form-check-input" type="checkbox" role="switch" id="billingToggle">
+        <label class="form-check-label" for="billingToggle">Annual billing (save more)</label>
+      </div>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-lg-3">
+        <div class="pricing-card card h-100 p-4 border">
+          <div class="text-muted">Free</div>
+          <h3 class="fw-bold">₹0<span class="fs-6 text-muted">/month</span></h3>
+          <ul class="pricing-feature-list list-unstyled text-muted">
+            <li>✅ Up to 50 concepts</li>
+            <li>✅ 5 source imports/month</li>
+            <li>✅ 5 AI extractions/month</li>
+            <li>✅ Daily review queue</li>
+            <li>✅ Basic retention dashboard</li>
+            <li>✅ Browser extension access</li>
+            <li>❌ Knowledge Connection Map</li>
+            <li>❌ Application Reminders</li>
+            <li>❌ Project Profiles</li>
+            <li>❌ Weekly Knowledge Reports</li>
+            <li>❌ PDF import</li>
+            <li>❌ Kindle import</li>
+            <li>❌ Full review history (7-day limit)</li>
+            <li>❌ Data export</li>
+          </ul>
+          <a class="btn btn-outline-primary w-100" href="{{ url_for('auth.signup') }}">Start for Free</a>
+        </div>
+      </div>
+      <div class="col-lg-3">
+        <div class="pricing-card featured card h-100 p-4 border-primary" id="plan-monthly">
+          <div class="d-flex justify-content-between align-items-center">
+            <div class="text-muted">Pro Monthly</div>
+            <span class="badge bg-primary">Most Popular</span>
+          </div>
+          <h3 class="fw-bold">₹999<span class="fs-6 text-muted">/month</span></h3>
+          <ul class="pricing-feature-list list-unstyled text-muted">
+            <li>✅ Unlimited concepts</li>
+            <li>✅ Unlimited imports</li>
+            <li>✅ Unlimited AI extractions</li>
+            <li>✅ Knowledge Connection Map</li>
+            <li>✅ Application Reminders</li>
+            <li>✅ Project Profiles</li>
+            <li>✅ Weekly Knowledge Reports</li>
+            <li>✅ PDF + Kindle import</li>
+            <li>✅ Full review history</li>
+            <li>✅ Data export</li>
+          </ul>
+          <button class="btn btn-brand w-100" data-plan="monthly" onclick="initiateRazorpayCheckout('monthly')">Upgrade to Pro</button>
+          <div class="small text-muted mt-2">Cancel anytime</div>
+        </div>
+        <div class="pricing-card featured card h-100 p-4 border-primary d-none" id="plan-annual">
+          <div class="d-flex justify-content-between align-items-center">
+            <div class="text-muted">Pro Annual</div>
+            <span class="badge bg-warning text-dark">Best Value</span>
+          </div>
+          <h3 class="fw-bold">₹8,999<span class="fs-6 text-muted">/year</span></h3>
+          <div class="text-success mb-2">Save ₹2,989 vs monthly</div>
+          <ul class="pricing-feature-list list-unstyled text-muted">
+            <li>✅ Unlimited concepts</li>
+            <li>✅ Unlimited imports</li>
+            <li>✅ Unlimited AI extractions</li>
+            <li>✅ Knowledge Connection Map</li>
+            <li>✅ Application Reminders</li>
+            <li>✅ Project Profiles</li>
+            <li>✅ Weekly Knowledge Reports</li>
+            <li>✅ PDF + Kindle import</li>
+            <li>✅ Full review history</li>
+            <li>✅ Data export</li>
+          </ul>
+          <button class="btn btn-brand w-100" data-plan="annual" onclick="initiateRazorpayCheckout('annual')">Upgrade Annually</button>
+          <div class="small text-muted mt-2">Just ₹749/month</div>
+        </div>
+      </div>
+      <div class="col-lg-3">
+        <div class="pricing-card card h-100 p-4 border">
+          <div class="text-muted">Small Team</div>
+          <h3 class="fw-bold">₹7,499<span class="fs-6 text-muted">/month</span></h3>
+          <ul class="pricing-feature-list list-unstyled text-muted">
+            <li>✅ Up to 10 users</li>
+            <li>✅ Admin dashboard</li>
+            <li>✅ Bulk import</li>
+            <li>✅ Compliance verification</li>
+            <li>✅ SSO support</li>
+          </ul>
+          <a class="btn btn-outline-primary w-100" href="{{ url_for('main.contact') }}">Talk to us</a>
+        </div>
+      </div>
+      <div class="col-lg-3">
+        <div class="pricing-card card h-100 p-4 border">
+          <div class="text-muted">Business</div>
+          <h3 class="fw-bold">₹22,999<span class="fs-6 text-muted">/month</span></h3>
+          <ul class="pricing-feature-list list-unstyled text-muted">
+            <li>✅ 11–50 users</li>
+            <li>✅ Admin dashboard</li>
+            <li>✅ Bulk import</li>
+            <li>✅ Compliance verification</li>
+            <li>✅ SSO support</li>
+          </ul>
+          <a class="btn btn-outline-primary w-100" href="{{ url_for('main.contact') }}">Contact Sales</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-5">
+      <h3 class="fw-bold mb-3">Billing FAQ</h3>
+      <div class="accordion" id="billingFaq">
+        {% set faqs = [
+          ('What happens when I upgrade?', 'Your subscription activates immediately and your limits become unlimited.'),
+          ('Can I cancel anytime?', 'Yes. You can cancel recurring billing from settings. Your access continues until the period ends.'),
+          ('Is my data safe?', 'Data is encrypted in transit and at rest. We do not sell or share your content.'),
+          ('Do you offer refunds?', 'Monthly plans are non-refundable; annual plans can be refunded within 14 days if unused.'),
+          ('What payment methods are supported?', 'Razorpay supports UPI, cards, and net banking in INR.'),
+          ('Can I upgrade mid-month?', 'Yes. We prorate within Razorpay subscriptions when applicable.'),
+        ] %}
+        {% for item in faqs %}
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="billHeading{{ loop.index0 }}">
+            <button class="accordion-button {% if loop.index0>0 %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#billCollapse{{ loop.index0 }}" aria-expanded="{{ 'true' if loop.index0==0 else 'false' }}" aria-controls="billCollapse{{ loop.index0 }}">
+              {{ item[0] }}
+            </button>
+          </h2>
+          <div id="billCollapse{{ loop.index0 }}" class="accordion-collapse collapse {% if loop.index0==0 %}show{% endif %}" data-bs-parent="#billingFaq">
+            <div class="accordion-body text-muted">{{ item[1] }}</div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+{% block scripts %}
+<script>
+  window.RAZORPAY_KEY_ID = "{{ razorpay_key_id }}";
+</script>
+{% endblock %}

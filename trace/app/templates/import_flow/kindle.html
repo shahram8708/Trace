@@ -1,0 +1,92 @@
+{% extends 'dashboard_base.html' %}
+{% block title %}Import Kindle Highlights{% endblock %}
+{% block head_extra %}<link rel="stylesheet" href="{{ url_for('static', filename='css/import.css') }}">{% endblock %}
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb" class="mb-3">
+  <ol class="breadcrumb mb-0">
+    <li class="breadcrumb-item"><a href="{{ url_for('dashboard_bp.dashboard') }}">Dashboard</a></li>
+    <li class="breadcrumb-item"><a href="{{ url_for('import_bp.hub') }}">Import Hub</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Kindle Highlights</li>
+  </ol>
+</nav>
+{% endblock %}
+{% block dashboard_content %}
+<h2 class="fw-bold">Import Kindle Highlights</h2>
+<p class="text-muted">Each book in your export will be imported as a separate source. Concept extraction runs on each book individually.</p>
+{% if not current_user.is_premium %}
+  <div class="alert alert-warning">Kindle import is a Pro feature. <a href="{{ url_for('main.pricing') }}">Upgrade to unlock.</a></div>
+{% else %}
+  <div class="accordion mb-3" id="kindleAccordion">
+    <div class="accordion-item">
+      <h2 class="accordion-header"><button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#method1">Method 1: From Amazon Account</button></h2>
+      <div id="method1" class="accordion-collapse collapse show" data-bs-parent="#kindleAccordion">
+        <div class="accordion-body">
+          <ol class="mb-0">
+            <li>Visit read.amazon.com/notebook.</li>
+            <li>Choose the book and click "Export Notes".</li>
+            <li>Download the CSV export.</li>
+            <li>Upload the CSV here.</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+    <div class="accordion-item">
+      <h2 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#method2">Method 2: From "My Clippings.txt"</button></h2>
+      <div id="method2" class="accordion-collapse collapse" data-bs-parent="#kindleAccordion">
+        <div class="accordion-body">
+          <ol class="mb-0">
+            <li>Connect your Kindle device via USB.</li>
+            <li>Open the documents folder and locate "My Clippings.txt".</li>
+            <li>Copy the file to your computer.</li>
+            <li>Upload the file here.</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <form method="POST" action="{{ url_for('import_bp.import_kindle') }}" enctype="multipart/form-data">
+    {{ form.hidden_tag() }}
+    <label for="kindle_file" class="upload-zone w-100" id="kindleZone">
+      <div class="fw-semibold">Drop your Kindle CSV/TXT here or click to browse</div>
+      <div class="text-muted small">Each book will be imported separately.</div>
+      {{ form.kindle_file(class="d-none", id="kindle_file") }}
+    </label>
+    {% for error in form.kindle_file.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+    <div id="kindlePreview" class="small mt-2 text-muted"></div>
+    <div class="mt-4 d-flex align-items-center gap-3">
+      <button type="submit" class="btn btn-brand" id="kindleBtn">Import Highlights</button>
+      <span class="text-muted">Processing time depends on number of books.</span>
+    </div>
+  </form>
+{% endif %}
+{% endblock %}
+{% block scripts %}
+<script>
+  const zone = document.getElementById('kindleZone');
+  const input = document.getElementById('kindle_file');
+  const preview = document.getElementById('kindlePreview');
+  if (zone && input) {
+    ['dragenter','dragover'].forEach(evt => zone.addEventListener(evt, (e) => { e.preventDefault(); zone.classList.add('drag-over'); }));
+    ['dragleave','drop'].forEach(evt => zone.addEventListener(evt, (e) => { e.preventDefault(); zone.classList.remove('drag-over'); }));
+    zone.addEventListener('click', () => input.click());
+    zone.addEventListener('drop', (e) => { input.files = e.dataTransfer.files; showPreview(); });
+    input.addEventListener('change', showPreview);
+  }
+  function showPreview() {
+    if (!preview || !input || !input.files.length) return;
+    const file = input.files[0];
+    preview.textContent = `${file.name} (${Math.round(file.size/1024)} KB)`;
+  }
+  const form = document.querySelector('form');
+  if (form) {
+    form.addEventListener('submit', () => {
+      const btn = document.getElementById('kindleBtn');
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Importing...';
+      }
+    });
+  }
+</script>
+{% endblock %}

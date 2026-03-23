@@ -1,0 +1,195 @@
+{% extends 'dashboard_base.html' %}
+{% block title %}Dashboard{% endblock %}
+{% block head_extra %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+{% endblock %}
+{% block dashboard_content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <div class="text-muted">Good {{ time_of_day }}, {{ current_user.first_name or current_user.get_display_name() }}!</div>
+    <h2 class="fw-bold mb-1">Your knowledge command center</h2>
+    <div class="text-muted">{{ current_date.strftime('%A, %d %B %Y') }}</div>
+  </div>
+  <div class="btn-group">
+    <a class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">Quick Import</a>
+    <ul class="dropdown-menu dropdown-menu-end">
+      <li><a class="dropdown-item" href="{{ url_for('import_bp.import_url') }}">Paste URL</a></li>
+      <li><a class="dropdown-item" href="{{ url_for('import_bp.import_text') }}">Paste Text</a></li>
+      <li><a class="dropdown-item" href="{{ url_for('import_bp.import_pdf') }}">Upload PDF</a></li>
+    </ul>
+  </div>
+</div>
+
+<div class="card queue-card shadow-sm border-0 mb-4">
+  <div class="card-body d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3">
+    <div>
+      {% if queue_count > 0 %}
+        <div class="text-muted">Today's Review Queue</div>
+        <div class="display-5 fw-bold text-primary">{{ queue_count }}</div>
+        <div class="text-muted">concepts ready for review today</div>
+        <div class="small text-muted mt-1">~{{ (queue_count * 1.5)|round(0, 'ceil') }} minutes</div>
+      {% elif reviewed_today_count > 0 %}
+        <div class="text-success fw-bold">All done for today! ✓</div>
+        <div class="text-muted">Reviewed {{ reviewed_today_count }} concepts today.</div>
+        {% if earliest_due %}
+          <div class="small text-muted mt-1">Next review on {{ earliest_due.strftime('%b %d, %Y') }}</div>
+        {% endif %}
+      {% elif total_active > 0 %}
+        <div class="fw-bold">No reviews due today</div>
+        {% if earliest_due %}
+          <div class="text-muted">Your next session is on {{ earliest_due.strftime('%b %d, %Y') }}.</div>
+        {% else %}
+          <div class="text-muted">All concepts are resting. Check back tomorrow.</div>
+        {% endif %}
+      {% else %}
+        <div class="fw-bold">Start by importing content</div>
+        <div class="text-muted">Add your first source to generate concepts.</div>
+      {% endif %}
+      {% if overdue_count > 0 %}
+        <div class="mt-2 small text-danger">includes {{ overdue_count }} overdue</div>
+      {% endif %}
+    </div>
+    <div class="text-lg-end">
+      {% if queue_count > 0 %}
+        <div class="d-flex flex-column align-items-lg-end gap-2">
+          <a class="btn btn-primary btn-lg px-4" href="{{ url_for('review_bp.session') }}">Start Review Session →</a>
+          {% if overdue_count > 0 %}
+            <a class="btn btn-outline-danger btn-sm" href="{{ url_for('review_bp.overdue') }}">View overdue ({{ overdue_count }})</a>
+          {% endif %}
+        </div>
+      {% else %}
+        <div class="d-flex gap-2">
+          <a class="btn btn-outline-primary" href="{{ url_for('import_bp.import_url') }}">Import URL</a>
+          <a class="btn btn-outline-primary" href="{{ url_for('import_bp.import_text') }}">Paste Text</a>
+          <a class="btn btn-outline-primary" href="{{ url_for('import_bp.import_pdf') }}">Upload PDF</a>
+        </div>
+      {% endif %}
+      <div class="streak-pill mt-2">🔥 {{ streak_info.current_streak }} day streak</div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-6 col-lg-3">
+    <div class="stat-card">
+      <div class="icon-circle text-primary"><i class="bi bi-journal-text"></i></div>
+      <div class="fs-3 fw-bold text-primary">{{ total_active }}</div>
+      <div class="text-muted">Total Concepts</div>
+      <div class="small text-muted">{{ mature_count }} mature • {{ total_active - mature_count }} learning</div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="stat-card">
+      <div class="icon-circle text-success"><i class="bi bi-shield-check"></i></div>
+      <div class="fs-3 fw-bold text-success">{{ overall_retention|round(1) }}%</div>
+      <div class="text-muted">Overall Retention</div>
+      <div class="small text-muted">Weighted by reviews</div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="stat-card">
+      <div class="icon-circle text-info"><i class="bi bi-diagram-3"></i></div>
+      <div class="fs-3 fw-bold text-info">{{ domain_count }}</div>
+      <div class="text-muted">Domains Covered</div>
+      <div class="small text-muted">knowledge areas</div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="stat-card">
+      <div class="icon-circle text-warning"><i class="bi bi-fire"></i></div>
+      <div class="fs-3 fw-bold text-warning">{{ streak_info.current_streak }}</div>
+      <div class="text-muted">Day Streak</div>
+      <div class="small text-muted">Best: {{ streak_info.longest_streak }} days</div>
+    </div>
+  </div>
+</div>
+
+<div class="card shadow-sm border-0 mb-4">
+  <div class="card-body">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <div>
+        <h5 class="mb-0">Knowledge Health</h5>
+        <div class="text-muted small">Top domains needing attention</div>
+      </div>
+      <a class="small" href="{{ url_for('concepts_bp.library') }}">View all →</a>
+    </div>
+    {% if domain_summary %}
+      <div class="d-flex flex-column gap-3">
+        {% for domain in domain_summary %}
+          {% set pct = (domain.avg_retention or 0) * 100 %}
+          {% set bar_class = pct >= 80 and 'bg-success' or (pct >= 50 and 'bg-warning' or 'bg-danger') %}
+          <div class="d-flex align-items-center gap-3 domain-row">
+            <span class="domain-badge {{ domain.domain|lower|replace(' ', '-') }}">{{ domain.domain }}</span>
+            <div class="flex-grow-1">
+              <div class="progress" style="height: 10px;">
+                <div class="progress-bar {{ bar_class }}" role="progressbar" style="width: {{ pct|round(0) }}%"></div>
+              </div>
+            </div>
+            <div class="text-muted small" style="width:70px;">{{ pct|round(0) }}%</div>
+            <div class="small text-muted" style="width:80px; text-align:right;">{{ domain.concept_count }} concepts</div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="text-muted">Import content to see domain health.</div>
+    {% endif %}
+  </div>
+</div>
+
+<div class="card shadow-sm border-0 mb-4">
+  <div class="card-body">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <div>
+        <h5 class="mb-0">Recently Imported</h5>
+        <div class="text-muted small">Your latest sources</div>
+      </div>
+      <a class="small" href="{{ url_for('library_bp.index') }}">View all →</a>
+    </div>
+    {% if recent_sources %}
+      <div class="row g-3">
+        {% for item in recent_sources %}
+          <div class="col-md-4">
+            <div class="import-card h-100">
+              <div class="d-flex justify-content-between align-items-start">
+                <span class="badge bg-light text-dark text-capitalize">{{ item.source_type }}</span>
+                <span class="badge bg-secondary">{{ item.concept_count or 0 }} concepts</span>
+              </div>
+              <div class="fw-semibold mt-2 text-truncate" title="{{ item.title }}">{{ item.title or 'Untitled' }}</div>
+              <div class="text-muted small">Imported {{ item.import_date|time_ago }}</div>
+              <a class="small" href="{{ url_for('library_bp.detail', source_id=item.id) }}">View →</a>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="text-muted">No imports yet. Add your first source to begin.</div>
+    {% endif %}
+  </div>
+</div>
+
+<div class="card shadow-sm border-0 mb-4">
+  <div class="card-body">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <h6 class="mb-0">Add More Content</h6>
+      <a class="small" href="{{ url_for('import_bp.hub') }}">Import hub →</a>
+    </div>
+    <div class="row g-2">
+      <div class="col-md-4"><a class="mini-card" href="{{ url_for('import_bp.import_url') }}"><i class="bi bi-link-45deg me-2"></i>URL</a></div>
+      <div class="col-md-4"><a class="mini-card" href="{{ url_for('import_bp.import_text') }}"><i class="bi bi-text-paragraph me-2"></i>Text</a></div>
+      <div class="col-md-4"><a class="mini-card" href="{{ url_for('import_bp.import_pdf') }}"><i class="bi bi-file-earmark-pdf me-2"></i>PDF</a></div>
+    </div>
+  </div>
+</div>
+
+{% if not current_user.is_premium and limits and limits.concepts_remaining is not none and limits.concepts_remaining <= 10 %}
+<div class="card border-0 shadow-sm upgrade-card">
+  <div class="card-body d-flex flex-column flex-md-row align-items-md-center justify-content-between">
+    <div>
+      <div class="fw-bold mb-1">You're near the free tier limit</div>
+      <div class="text-muted">You've added {{ 50 - limits.concepts_remaining }} of 50 free concepts. Upgrade to Pro for unlimited concepts.</div>
+    </div>
+    <a class="btn btn-primary" href="{{ url_for('main.pricing') }}">See Pro Plans →</a>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

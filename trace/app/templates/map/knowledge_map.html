@@ -1,0 +1,81 @@
+{% extends 'dashboard_base.html' %}
+{% block title %}Knowledge Map{% endblock %}
+{% block head_extra %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/map.css') }}">
+<script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+{% endblock %}
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb" class="mb-3">
+  <ol class="breadcrumb mb-0">
+    <li class="breadcrumb-item"><a href="{{ url_for('dashboard_bp.dashboard') }}">Dashboard</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Knowledge Map</li>
+  </ol>
+</nav>
+{% endblock %}
+{% block dashboard_content %}
+<div class="knowledge-map-page">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="text-white small">Need more nodes? Add imports or concepts to grow the map.</div>
+    <div class="d-flex gap-2 flex-wrap">
+      <a class="btn btn-outline-primary btn-sm" href="{{ url_for('import_bp.hub') }}">Import content</a>
+      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('concepts_bp.library') }}">Review concepts</a>
+    </div>
+  </div>
+  {% if graph_truncated %}
+  <div class="alert alert-info mb-3">Showing the 500 most-reviewed concepts from your library of {{ total_concept_count }} total concepts. Filter by domain to explore specific areas.</div>
+  {% endif %}
+  <div class="map-controls d-flex align-items-center justify-content-between mb-3">
+    <div class="d-flex align-items-center gap-3">
+      <div class="h4 mb-0 text-white">Knowledge Map <span class="badge bg-secondary">{{ total_concept_count }}</span></div>
+    </div>
+    <div class="d-flex flex-wrap gap-2 domain-pill-group" id="domain-pill-group">
+      <button class="btn btn-sm btn-outline-light active" data-domain="all">All Domains</button>
+      {% for domain in domain_list %}
+      <button class="btn btn-sm btn-outline-light" data-domain="{{ domain }}">{{ domain }}</button>
+      {% endfor %}
+    </div>
+    <div class="d-flex align-items-center gap-2">
+      <div class="search-wrapper position-relative">
+        <i class="bi bi-search search-icon"></i>
+        <input type="text" class="form-control form-control-sm" id="map-search" placeholder="Search concepts">
+      </div>
+      <button class="btn btn-outline-info btn-sm" id="suggestions-toggle">Suggested Connections <span class="badge bg-light text-dark" id="suggestions-count"></span></button>
+    </div>
+  </div>
+  <div class="connection-mode-banner" id="connection-mode-banner">Click another concept to connect it.</div>
+  <div class="map-viewport position-relative">
+    <div id="graph-container"></div>
+    <div class="zoom-controls">
+      <button class="btn btn-outline-light btn-sm" id="zoom-in">+</button>
+      <button class="btn btn-outline-light btn-sm" id="zoom-out">−</button>
+      <button class="btn btn-outline-light btn-sm" id="zoom-reset">Fit</button>
+      <button class="btn btn-outline-light btn-sm" id="rerun-layout">Re-run</button>
+    </div>
+    <div class="suggestions-panel" id="suggestions-panel">
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <div class="h6 mb-0">Suggested Connections</div>
+        <button class="btn btn-outline-light btn-sm" id="close-suggestions">Close</button>
+      </div>
+      <div id="suggestions-list"></div>
+    </div>
+    <div class="tooltip-edge" id="edge-tooltip"></div>
+  </div>
+  <div class="detail-panel" id="detail-panel"></div>
+</div>
+<script id="graph-data" type="application/json">{{ nodes_json|safe }}</script>
+<script id="edge-data" type="application/json">{{ edges_json|safe }}</script>
+<script id="suggestions-data" type="application/json">{{ suggestions_json|safe }}</script>
+<script>
+  window.__TRACE_MAP__ = {
+    csrfToken: "{{ csrf_token() }}",
+    nodes: JSON.parse(document.getElementById('graph-data').textContent || '[]'),
+    edges: JSON.parse(document.getElementById('edge-data').textContent || '[]'),
+    suggestions: JSON.parse(document.getElementById('suggestions-data').textContent || '[]'),
+  };
+</script>
+{% endblock %}
+{% block scripts %}
+{{ super() }}
+<script src="{{ url_for('static', filename='js/knowledge_map.js') }}"></script>
+{% endblock %}

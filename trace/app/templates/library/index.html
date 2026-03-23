@@ -1,0 +1,111 @@
+{% extends 'dashboard_base.html' %}
+{% block title %}My Library{% endblock %}
+{% block head_extra %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+{% endblock %}
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb" class="mb-3">
+  <ol class="breadcrumb mb-0">
+    <li class="breadcrumb-item"><a href="{{ url_for('dashboard_bp.dashboard') }}">Dashboard</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Library</li>
+  </ol>
+</nav>
+{% endblock %}
+{% block dashboard_content %}
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-3">
+  <div>
+    <h3 class="fw-bold mb-0">My Library</h3>
+    <div class="text-muted">{{ pagination.total }} sources across all import types</div>
+  </div>
+  <div class="d-flex gap-2">
+    <a class="btn btn-primary" href="{{ url_for('import_bp.import_url') }}">Import URL</a>
+    <a class="btn btn-outline-primary" href="{{ url_for('import_bp.hub') }}">Import hub</a>
+  </div>
+</div>
+
+<div class="mb-3 d-flex flex-wrap gap-2 text-muted small">
+  <span class="badge bg-light text-dark">Articles: {{ source_type_counts.get('article', 0) }}</span>
+  <span class="badge bg-light text-dark">PDFs: {{ source_type_counts.get('pdf', 0) }}</span>
+  <span class="badge bg-light text-dark">Text: {{ source_type_counts.get('text', 0) }}</span>
+  <span class="badge bg-light text-dark">Kindle: {{ source_type_counts.get('kindle', 0) }}</span>
+</div>
+
+<form class="card border-0 shadow-sm p-3 mb-3" method="get" action="{{ url_for('library_bp.index') }}">
+  <div class="row g-2 align-items-center">
+    <div class="col-lg-5">
+      <div class="input-group">
+        <span class="input-group-text"><i class="bi bi-search"></i></span>
+        <input type="text" class="form-control" name="search" value="{{ search }}" placeholder="Search sources">
+      </div>
+    </div>
+    <div class="col-lg-3">
+      <select class="form-select" name="source_type">
+        <option value="" {% if not source_type %}selected{% endif %}>All types</option>
+        <option value="article" {% if source_type=='article' %}selected{% endif %}>Articles</option>
+        <option value="pdf" {% if source_type=='pdf' %}selected{% endif %}>PDFs</option>
+        <option value="text" {% if source_type=='text' %}selected{% endif %}>Text</option>
+        <option value="kindle" {% if source_type=='kindle' %}selected{% endif %}>Kindle</option>
+      </select>
+    </div>
+    <div class="col-lg-2">
+      <select class="form-select" name="sort">
+        <option value="date" {% if sort=='date' %}selected{% endif %}>Newest First</option>
+        <option value="concepts" {% if sort=='concepts' %}selected{% endif %}>Most Concepts</option>
+        <option value="title" {% if sort=='title' %}selected{% endif %}>Alphabetical</option>
+      </select>
+    </div>
+    <div class="col-lg-2 text-lg-end">
+      <button class="btn btn-primary" type="submit">Apply</button>
+    </div>
+  </div>
+</form>
+
+{% if sources %}
+  <div class="list-group shadow-sm">
+    {% for src in sources %}
+      <a class="list-group-item list-group-item-action py-3" href="{{ url_for('library_bp.detail', source_id=src.id) }}">
+        <div class="d-flex justify-content-between align-items-start gap-3">
+          <div class="d-flex align-items-center gap-3">
+            <div class="type-icon type-{{ src.source_type|lower }}"><i class="bi bi-file-earmark-text"></i></div>
+            <div>
+              <div class="fw-semibold text-truncate" style="max-width: 420px;">{{ src.title or 'Untitled' }}</div>
+              <div class="text-muted small">{{ src.source_type|capitalize }} • Imported {{ src.import_date|time_ago }}</div>
+              {% if src.author %}<div class="text-muted small">{{ src.author }}</div>{% endif %}
+            </div>
+          </div>
+          <div class="text-end">
+            <div class="badge bg-secondary">{{ src.concept_count or 0 }} concepts</div>
+            <div class="mt-1 small text-muted">Avg retention: {{ (retention_map.get(src.id, 0) * 100)|round(0) }}%</div>
+          </div>
+        </div>
+      </a>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="card border-0 shadow-sm p-4 text-center">
+    <div class="display-5 text-muted mb-2"><i class="bi bi-archive"></i></div>
+    <h5>No sources yet</h5>
+    <p class="text-muted">Import an article, paste text, or upload a PDF to begin.</p>
+    <div class="d-flex gap-2 justify-content-center">
+      <a class="btn btn-primary" href="{{ url_for('import_bp.import_url') }}">Import URL</a>
+      <a class="btn btn-outline-primary" href="{{ url_for('import_bp.import_text') }}">Paste Text</a>
+    </div>
+  </div>
+{% endif %}
+
+{% if pagination.pages > 1 %}
+<nav aria-label="Library pagination" class="mt-3">
+  <ul class="pagination justify-content-center">
+    <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}"><a class="page-link" href="{{ url_for('library_bp.index', page=pagination.prev_num, search=search, source_type=source_type, sort=sort) if pagination.has_prev else '#' }}">Previous</a></li>
+    {% for p in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+      {% if p %}
+        <li class="page-item {% if p == pagination.page %}active{% endif %}"><a class="page-link" href="{{ url_for('library_bp.index', page=p, search=search, source_type=source_type, sort=sort) }}">{{ p }}</a></li>
+      {% else %}
+        <li class="page-item disabled"><span class="page-link">…</span></li>
+      {% endif %}
+    {% endfor %}
+    <li class="page-item {% if not pagination.has_next %}disabled{% endif %}"><a class="page-link" href="{{ url_for('library_bp.index', page=pagination.next_num, search=search, source_type=source_type, sort=sort) if pagination.has_next else '#' }}">Next</a></li>
+  </ul>
+</nav>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,101 @@
+{% extends 'dashboard_base.html' %}
+{% block title %}Source Detail{% endblock %}
+{% block head_extra %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+{% endblock %}
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb" class="mb-3">
+  <ol class="breadcrumb mb-0">
+    <li class="breadcrumb-item"><a href="{{ url_for('dashboard_bp.dashboard') }}">Dashboard</a></li>
+    <li class="breadcrumb-item"><a href="{{ url_for('library_bp.index') }}">Library</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{{ source.title or 'Source' }}</li>
+  </ol>
+</nav>
+{% endblock %}
+{% block dashboard_content %}
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-3">
+  <div>
+    <h3 class="fw-bold mb-0">{{ source.title or 'Untitled Source' }}</h3>
+    <div class="text-muted">{{ source.source_type|capitalize }} • Imported {{ source.import_date|time_ago }}</div>
+  </div>
+  <div class="d-flex gap-2">
+    <a class="btn btn-outline-secondary" href="{{ url_for('library_bp.index') }}">Back to library</a>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-8">
+    <div class="card border-0 shadow-sm mb-3">
+      <div class="card-body">
+        <div class="d-flex align-items-center gap-3 mb-2">
+          <div class="type-icon type-{{ source.source_type|lower }}"><i class="bi bi-file-earmark-text"></i></div>
+          <div>
+            {% if source.author %}<div class="fw-semibold">{{ source.author }}</div>{% endif %}
+            {% if source.source_url %}
+              <a href="{{ source.source_url }}" target="_blank" rel="noopener" class="small">Open original</a>
+            {% else %}
+              <div class="small text-muted">No original link</div>
+            {% endif %}
+            {% if source.word_count %}<div class="text-muted small">~{{ source.word_count }} words</div>{% endif %}
+          </div>
+        </div>
+        <p class="text-muted mb-0">{{ source.source_url or 'No description provided.' }}</p>
+      </div>
+    </div>
+
+    <div class="card border-0 shadow-sm mb-3">
+      <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <div>
+          <div class="fw-semibold">Concepts from this source</div>
+          <div class="text-muted small">{{ concepts|length }} total</div>
+        </div>
+        <a class="btn btn-sm btn-primary" href="{{ url_for('concepts_bp.library', source_id=source.id) }}">View in concept library</a>
+      </div>
+      <div class="list-group list-group-flush">
+        {% for concept in concepts %}
+          <a class="list-group-item list-group-item-action" href="{{ url_for('concepts_bp.detail', concept_id=concept.id) }}">
+            <div class="d-flex justify-content-between">
+              <div>
+                <div class="fw-semibold">{{ concept.title }}</div>
+                <div class="text-muted small">{{ concept.domain|capitalize if concept.domain else 'General' }}</div>
+              </div>
+              <div class="text-end">
+                <div class="badge bg-secondary">{{ (concept.retention_strength * 100)|round(0) }}% retention</div>
+                <div class="small text-muted">Last reviewed {{ concept.last_reviewed|time_ago if concept.last_reviewed else 'Never' }}</div>
+              </div>
+            </div>
+          </a>
+        {% endfor %}
+        {% if not concepts %}
+          <div class="list-group-item text-muted">
+            <div class="mb-2">No concepts yet.</div>
+            <div class="d-flex gap-2 flex-wrap">
+              <a class="btn btn-sm btn-primary" href="{{ url_for('import_bp.hub') }}">Import more content</a>
+              <a class="btn btn-sm btn-outline-primary" href="{{ url_for('import_bp.import_text') }}">Add concept manually</a>
+            </div>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="card border-0 shadow-sm mb-3">
+      <div class="card-body">
+        <div class="fw-semibold mb-2">Retention</div>
+        <div class="display-6 fw-bold">{{ (avg_retention * 100)|round(0) }}%</div>
+        <div class="text-muted small">Across {{ concepts|length }} concepts</div>
+      </div>
+    </div>
+    <div class="card border-0 shadow-sm mb-3">
+      <div class="card-body">
+        <div class="fw-semibold mb-2">Stats</div>
+        <div class="d-flex justify-content-between small"><span>Concepts</span><span>{{ concepts|length }}</span></div>
+        <div class="d-flex justify-content-between small"><span>Overdue</span><span>{{ overdue_count }}</span></div>
+        <div class="d-flex justify-content-between small"><span>Reviewed</span><span>{{ reviewed_count }}</span></div>
+        <div class="d-flex justify-content-between small"><span>Mature</span><span>{{ mature_count }}</span></div>
+        <div class="d-flex justify-content-between small"><span>Active</span><span>{{ active_count }}</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

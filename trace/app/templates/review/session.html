@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+{% block title %}Review Session{% endblock %}
+{% block head_extra %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/review.css') }}">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" defer></script>
+<script src="{{ url_for('static', filename='js/charts.js') }}" defer></script>
+{% endblock %}
+{% block content %}
+<div class="review-session">
+{% if has_concepts %}
+<header class="review-header d-flex align-items-center px-3 px-md-4">
+  <div class="d-flex align-items-center w-100">
+    <div class="me-3"><a href="{{ url_for('dashboard_bp.dashboard') }}" class="brand text-decoration-none">Trace</a></div>
+    <div class="flex-grow-1 text-center progress-wrap">
+      <div class="progress-label" id="progress-text">Concept 1 of {{ total_count }}</div>
+      <div class="review-progress">
+        <div class="progress-bar" role="progressbar" id="progress-bar" style="width: 0%"></div>
+      </div>
+    </div>
+    <div class="d-flex align-items-center gap-3 ms-3">
+      <span class="streak-pill">🔥 {{ streak_days }} days</span>
+      <a href="#" id="end-session" class="text-muted">End Session</a>
+    </div>
+  </div>
+</header>
+
+<div class="session-container">
+  <div id="resume-banner" class="session-banner d-none mb-3">
+    You have an in-progress session. Resume where you left off?
+    <div class="mt-2 d-flex gap-2">
+      <button class="btn btn-sm btn-primary" id="resume-btn">Resume</button>
+      <button class="btn btn-sm btn-outline-secondary" id="restart-btn">Start over</button>
+    </div>
+  </div>
+
+  <div id="session-body">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+      <span id="domain-badge" class="domain-pill domain-general">General</span>
+      <div class="small text-muted" id="source-label">From your knowledge library</div>
+    </div>
+    <h2 class="concept-title mb-1" id="concept-title"></h2>
+    <hr>
+
+    <section id="prompt-section">
+      <p class="prompt-text">In your own words, explain this concept and describe a situation where you might apply it in your work:</p>
+      <div class="response-area mb-2">
+        <textarea id="response-text" placeholder="Type your recall here — even partial recall counts. The effort of trying is what makes this stick."></textarea>
+      </div>
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <span class="char-counter" id="char-counter">0 characters</span>
+        <button class="btn btn-check-recall" id="check-btn" disabled>Check My Recall</button>
+      </div>
+      <div class="tip-text">Try to recall before looking. The struggle activates memory consolidation.</div>
+    </section>
+
+    <section id="reveal-section" class="d-none">
+      <div class="reveal-row mb-3">
+        <div class="recall-card">
+          <div class="text-success fw-bold mb-1">Your Recall</div>
+          <div id="your-recall"></div>
+        </div>
+        <div class="answer-card">
+          <div class="text-primary fw-bold mb-1">Correct Answer</div>
+          <div id="concept-answer"></div>
+          <blockquote class="source-excerpt mt-2" id="source-excerpt"></blockquote>
+        </div>
+      </div>
+      <div class="mb-2 fw-semibold">How well did you recall this?</div>
+      <div id="rating-error" class="alert alert-danger d-none py-2 mb-3"></div>
+      <div class="rating-grid">
+        <button class="rating-btn btn-again" data-quality="0">🔴 Again <span class="rating-subtext">I didn't recall it</span></button>
+        <button class="rating-btn btn-hard" data-quality="1">🟡 Hard <span class="rating-subtext">I got parts of it</span></button>
+        <button class="rating-btn btn-good" data-quality="3">🟢 Good <span class="rating-subtext">I recalled it with effort</span></button>
+        <button class="rating-btn btn-easy" data-quality="5">💎 Easy <span class="rating-subtext">Perfect recall</span></button>
+      </div>
+    </section>
+  </div>
+
+  <div id="session-complete" class="session-complete">
+    <div class="complete-icon mb-3">🎉</div>
+    <h3 class="fw-bold">Session Complete!</h3>
+    <p class="text-muted">Great work. Here's how you did.</p>
+    <div class="complete-grid">
+      <div>
+        <div class="fw-bold">Quality distribution</div>
+        <div class="doughnut-wrap"><canvas id="quality-doughnut"></canvas></div>
+      </div>
+      <div>
+        <div class="fw-bold mb-2">Counts</div>
+        <div class="d-flex flex-column gap-1">
+          <div>Again: <span id="again-count">0</span></div>
+          <div>Hard: <span id="hard-count">0</span></div>
+          <div>Good: <span id="good-count">0</span></div>
+          <div>Easy: <span id="easy-count">0</span></div>
+        </div>
+      </div>
+      <div>
+        <div class="fw-bold mb-2">Streak</div>
+        <div id="complete-streak">—</div>
+        <div id="complete-record" class="text-success d-none">New personal best!</div>
+      </div>
+    </div>
+    <div class="mt-4 d-flex gap-2 justify-content-center">
+      <a class="btn btn-primary" href="{{ url_for('dashboard_bp.dashboard') }}">Back to Dashboard</a>
+      <a class="btn btn-outline-primary" href="{{ url_for('import_bp.hub') }}">Import More Content →</a>
+    </div>
+  </div>
+</div>
+
+<script type="application/json" id="session-data">{{ concepts_json|safe }}</script>
+<script src="{{ url_for('static', filename='js/review_session.js') }}" defer></script>
+{% else %}
+<div class="p-5 text-center">
+  <div class="display-4 mb-3">📭</div>
+  <h3 class="fw-bold">No concepts due right now</h3>
+  <p class="text-muted mb-4">Import something new or check back soon—your queue will refill automatically.</p>
+  <div class="d-flex gap-2 justify-content-center flex-wrap">
+    <a class="btn btn-primary" href="{{ url_for('import_bp.hub') }}">Import content</a>
+    <a class="btn btn-outline-primary" href="{{ url_for('review_bp.hub') }}">Back to review hub</a>
+  </div>
+</div>
+{% endif %}
+</div>
+{% endblock %}
+{% block scripts %}{% endblock %}

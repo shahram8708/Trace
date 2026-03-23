@@ -1,0 +1,95 @@
+{% extends 'dashboard_base.html' %}
+{% block title %}Upload PDF{% endblock %}
+{% block head_extra %}<link rel="stylesheet" href="{{ url_for('static', filename='css/import.css') }}">{% endblock %}
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb" class="mb-3">
+  <ol class="breadcrumb mb-0">
+    <li class="breadcrumb-item"><a href="{{ url_for('dashboard_bp.dashboard') }}">Dashboard</a></li>
+    <li class="breadcrumb-item"><a href="{{ url_for('import_bp.hub') }}">Import Hub</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Upload PDF</li>
+  </ol>
+</nav>
+{% endblock %}
+{% block dashboard_content %}
+<h2 class="fw-bold">Upload PDF</h2>
+<p class="text-muted">Upload PDF documents up to 20MB.</p>
+{% if not current_user.is_premium %}
+  <div class="alert alert-warning">PDF import is a Pro feature. <a href="{{ url_for('main.pricing') }}">Upgrade to unlock.</a></div>
+{% else %}
+  <form method="POST" action="{{ url_for('import_bp.import_pdf') }}" enctype="multipart/form-data">
+    {{ form.hidden_tag() }}
+    <div class="mb-3">
+      <label for="pdf_file" class="upload-zone w-100" id="uploadZone">
+        <div class="fw-semibold">Drop your PDF here or click to browse</div>
+        <div class="text-muted small">Maximum file size: 20MB</div>
+        {{ form.pdf_file(class="d-none", id="pdf_file") }}
+      </label>
+      {% for error in form.pdf_file.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+      <div id="filePreview" class="small mt-2 text-muted"></div>
+    </div>
+    <div class="row g-3">
+      <div class="col-md-6">
+        {{ form.title.label(class="form-label fw-semibold") }}
+        {{ form.title(class="form-control", placeholder="Optional") }}
+        {% for error in form.title.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+      </div>
+      <div class="col-md-6">
+        {{ form.author.label(class="form-label fw-semibold") }}
+        {{ form.author(class="form-control", placeholder="Optional") }}
+        {% for error in form.author.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+      </div>
+    </div>
+    <div class="mt-3">
+      <div class="fw-semibold mb-2">Domain Tags (optional)</div>
+      <div class="d-flex flex-wrap gap-2">
+        {% set selected_domains = form.domain_tags.data or [] %}
+        {% for val, label in form.domain_tags.choices %}
+          <input
+            type="checkbox"
+            class="btn-check domain-tag-check"
+            id="pdf-domain-{{ loop.index }}"
+            autocomplete="off"
+            name="domain_tags"
+            value="{{ val }}"
+            {% if val in selected_domains %}checked{% endif %}
+          >
+          <label class="btn btn-sm btn-outline-secondary domain-tag-label" for="pdf-domain-{{ loop.index }}">{{ label }}</label>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="mt-4 d-flex align-items-center gap-3">
+      <button type="submit" class="btn btn-brand" id="processBtn">Process PDF</button>
+      <span class="text-muted">Processing time: Usually 15–30 seconds depending on PDF length</span>
+    </div>
+  </form>
+{% endif %}
+{% endblock %}
+{% block scripts %}
+<script>
+  const zone = document.getElementById('uploadZone');
+  const input = document.getElementById('pdf_file');
+  const preview = document.getElementById('filePreview');
+  if (zone && input) {
+    ['dragenter','dragover'].forEach(evt => zone.addEventListener(evt, (e) => { e.preventDefault(); zone.classList.add('drag-over'); }));
+    ['dragleave','drop'].forEach(evt => zone.addEventListener(evt, (e) => { e.preventDefault(); zone.classList.remove('drag-over'); }));
+    zone.addEventListener('click', () => input.click());
+    zone.addEventListener('drop', (e) => { input.files = e.dataTransfer.files; showPreview(); });
+    input.addEventListener('change', showPreview);
+  }
+  function showPreview() {
+    if (!preview || !input || !input.files.length) return;
+    const file = input.files[0];
+    preview.textContent = `${file.name} (${Math.round(file.size/1024)} KB)`;
+  }
+  const form = document.querySelector('form');
+  if (form) {
+    form.addEventListener('submit', () => {
+      const btn = document.getElementById('processBtn');
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processing...';
+      }
+    });
+  }
+</script>
+{% endblock %}

@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block title %}About Trace{% endblock %}
+{% block content %}
+<section class="py-5 bg-white">
+  <div class="container">
+    <div class="row mb-5">
+      <div class="col-lg-8">
+        <h1 class="display-5 fw-bold">Closing the gap between learning and expertise</h1>
+        <p class="lead text-muted">Trace exists to close the gap between the time professionals invest in learning and the expertise they actually build.</p>
+      </div>
+    </div>
+    <div class="row g-4 mb-5">
+      <div class="col-md-6">
+        <h4 class="fw-semibold">The problem we're solving</h4>
+        <p class="text-muted">Professionals read books, articles, research, and course materials for hours each week. Yet when real work scenarios arise, the ideas are fuzzy. Notes pile up in tools but rarely get revisited. Traditional bookmarking and passive highlighting don't translate into action.</p>
+        <p class="text-muted">Trace confronts this by focusing on memory and application. The goal is not to collect information but to retain and use it when it counts.</p>
+      </div>
+      <div class="col-md-6">
+        <h4 class="fw-semibold">Our approach</h4>
+        <p class="text-muted">Unlike generic note apps, Trace is built on cognitive science. Spaced repetition, active recall, and AI-assisted concept extraction keep your time focused on recalling and applying, not organizing.</p>
+        <p class="text-muted">We draw from the rigor of SuperMemo and Anki, the convenience of Readwise, and the structure of professional project tools—combining them into a single workflow optimized for retention.</p>
+      </div>
+    </div>
+    <div class="row align-items-center g-4 mb-5">
+      <div class="col-md-5">
+        <div class="card p-4 card-lift h-100">
+          <h5 class="fw-semibold">The team</h5>
+          <p class="text-muted mb-0">Founded by a former product lead who forgot too many great ideas, Trace is built by a small team obsessed with cognition, learning science, and elegant software. We ship fast, listen closely, and care about helping professionals turn learning into leverage.</p>
+        </div>
+      </div>
+      <div class="col-md-7">
+        <div class="card p-4 card-lift h-100">
+          <h5 class="fw-semibold">What we believe</h5>
+          <ul class="text-muted mb-0">
+            <li>Retention beats consumption. Time spent learning should compound.</li>
+            <li>Application is the ultimate metric. Concepts should inform real decisions.</li>
+            <li>Great tools stay out of the way. The workflow should feel effortless.</li>
+            <li>Privacy matters. Your knowledge library is yours.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="text-center py-5 bg-light rounded-3 card-lift">
+      <h3 class="fw-bold mb-3">Build expertise that lasts</h3>
+      <p class="text-muted mb-4">Join professionals who refuse to forget the ideas that matter.</p>
+      <a class="btn btn-brand btn-lg" href="{{ url_for('auth.signup') }}">Start for Free</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

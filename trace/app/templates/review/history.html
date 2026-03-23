@@ -1,0 +1,131 @@
+{% extends 'dashboard_base.html' %}
+{% block title %}Review History{% endblock %}
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb" class="mb-3">
+  <ol class="breadcrumb mb-0">
+    <li class="breadcrumb-item"><a href="{{ url_for('dashboard_bp.dashboard') }}">Dashboard</a></li>
+    <li class="breadcrumb-item"><a href="{{ url_for('review_bp.hub') }}">Review</a></li>
+    <li class="breadcrumb-item active" aria-current="page">History</li>
+  </ol>
+</nav>
+{% endblock %}
+{% block dashboard_content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h3 class="fw-bold mb-1">Review History</h3>
+    <div class="text-muted">Total reviews: {{ total_all_time }}</div>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-6 col-lg-3">
+    <div class="card border-0 shadow-sm p-3 h-100">
+      <div class="text-muted">All-time</div>
+      <div class="fs-3 fw-bold">{{ total_all_time }}</div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="card border-0 shadow-sm p-3 h-100">
+      <div class="text-muted">This week</div>
+      <div class="fs-3 fw-bold">{{ total_week }}</div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="card border-0 shadow-sm p-3 h-100">
+      <div class="text-muted">This month</div>
+      <div class="fs-3 fw-bold">{{ total_month }}</div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="card border-0 shadow-sm p-3 h-100">
+      <div class="text-muted">Avg daily (30d)</div>
+      <div class="fs-3 fw-bold">{{ avg_daily_30 }}</div>
+    </div>
+  </div>
+</div>
+
+<div class="card border-0 shadow-sm p-4 mb-4">
+  <h5 class="fw-bold mb-3">30-day Activity</h5>
+  <div id="heatmap" class="heatmap-grid"></div>
+  <div class="d-flex align-items-center gap-2 small text-muted mt-2">
+    <span>Less</span>
+    <div class="heatmap-cell count-0"></div>
+    <div class="heatmap-cell count-1"></div>
+    <div class="heatmap-cell count-4"></div>
+    <div class="heatmap-cell count-8"></div>
+    <span>More</span>
+  </div>
+</div>
+
+{% if grouped_events %}
+  {% for day, items in grouped_events.items() %}
+    <div class="card border-0 shadow-sm mb-3">
+      <div class="card-header bg-white fw-bold">{{ day.strftime('%A, %B %d, %Y') }} — {{ items|length }} reviewed</div>
+      <div class="list-group list-group-flush">
+        {% for event, concept in items %}
+          <div class="list-group-item d-flex justify-content-between align-items-center">
+            <div>
+              <div class="fw-semibold"><a href="{{ url_for('concepts_bp.detail', concept_id=concept.id) }}">{{ concept.name }}</a></div>
+              <div class="text-muted small">{{ concept.domain_tag or 'General' }} • {{ event.reviewed_at|time_ago }}</div>
+            </div>
+            <span class="badge {% if event.quality_rating == 0 %}bg-danger{% elif event.quality_rating == 1 %}bg-warning text-dark{% elif event.quality_rating == 3 %}bg-success{% else %}bg-primary{% endif %}">
+              {% if event.quality_rating == 0 %}Again{% elif event.quality_rating == 1 %}Hard{% elif event.quality_rating == 3 %}Good{% else %}Easy{% endif %}
+            </span>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  {% endfor %}
+{% else %}
+  <div class="card border-0 shadow-sm p-4 text-center">
+    <div class="display-5 text-muted mb-2"><i class="bi bi-hourglass"></i></div>
+    <h5>Your first review will appear here</h5>
+    <p class="text-muted">Start a session to build your streak.</p>
+    <div class="d-flex gap-2 justify-content-center flex-wrap">
+      <a class="btn btn-primary" href="{{ url_for('review_bp.session') }}">Start review →</a>
+      <a class="btn btn-outline-primary" href="{{ url_for('import_bp.hub') }}">Import content</a>
+    </div>
+  </div>
+{% endif %}
+
+{% if pagination.pages > 1 %}
+<nav aria-label="History pagination" class="mt-3">
+  <ul class="pagination justify-content-center">
+    <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+      <a class="page-link" href="{{ url_for('review_bp.history', page=pagination.prev_num) if pagination.has_prev else '#' }}">Previous</a>
+    </li>
+    {% for p in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+      {% if p %}
+        <li class="page-item {% if p == pagination.page %}active{% endif %}"><a class="page-link" href="{{ url_for('review_bp.history', page=p) }}">{{ p }}</a></li>
+      {% else %}
+        <li class="page-item disabled"><span class="page-link">…</span></li>
+      {% endif %}
+    {% endfor %}
+    <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+      <a class="page-link" href="{{ url_for('review_bp.history', page=pagination.next_num) if pagination.has_next else '#' }}">Next</a>
+    </li>
+  </ul>
+</nav>
+{% endif %}
+
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/charts.js') }}" defer></script>
+<style>
+  .heatmap-grid { display: grid; grid-template-columns: repeat(6, 18px); gap: 6px; }
+  .heatmap-cell { width: 18px; height: 18px; border-radius: 4px; background: #e5e7eb; position: relative; }
+  .heatmap-cell.count-1 { background: #c7e9f1; }
+  .heatmap-cell.count-4 { background: #6ac1d6; }
+  .heatmap-cell.count-8 { background: #1b4f72; }
+  .heatmap-cell::after { content: attr(data-tooltip); position: absolute; background: #111827; color: #fff; padding: 4px 6px; border-radius: 4px; font-size: 11px; white-space: nowrap; opacity: 0; transform: translate(-50%, -6px); left: 50%; top: -6px; pointer-events: none; transition: opacity 0.15s ease; }
+  .heatmap-cell:hover::after { opacity: 1; z-index: 10; }
+</style>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const data = {{ heatmap_data|tojson }};
+    if (window.renderActivityHeatmap) {
+      window.renderActivityHeatmap('heatmap', data);
+    }
+  });
+</script>
+{% endblock %}

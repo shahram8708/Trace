@@ -1,0 +1,119 @@
+{% extends 'dashboard_base.html' %}
+{% block title %}Billing{% endblock %}
+{% block head_extra %}
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+{% endblock %}
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb" class="mb-3">
+  <ol class="breadcrumb mb-0">
+    <li class="breadcrumb-item"><a href="{{ url_for('dashboard_bp.dashboard') }}">Dashboard</a></li>
+    <li class="breadcrumb-item"><a href="{{ url_for('profile_bp.settings_account') }}">Settings</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Billing</li>
+  </ol>
+</nav>
+{% endblock %}
+{% block dashboard_content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div>
+    <h2 class="mb-0">Billing</h2>
+    <div class="text-muted">Manage your Trace Pro subscription.</div>
+  </div>
+</div>
+
+<ul class="nav settings-nav mb-4 flex-wrap">
+  <li class="nav-item"><a class="nav-link" href="{{ url_for('profile_bp.settings_account') }}">Account</a></li>
+  <li class="nav-item"><a class="nav-link active" href="#">Billing</a></li>
+  <li class="nav-item"><a class="nav-link" href="{{ url_for('profile_bp.notifications') }}">Notifications</a></li>
+  <li class="nav-item"><a class="nav-link" href="{{ url_for('profile_bp.integrations') }}">Integrations</a></li>
+  <li class="nav-item"><a class="nav-link" href="{{ url_for('profile_bp.delete_account') }}">Delete</a></li>
+</ul>
+
+<div class="row g-3">
+  <div class="col-lg-4">
+    <div class="settings-card p-4 h-100">
+      <h5 class="mb-3">Current Plan</h5>
+      {% if current_user.is_premium %}
+      <div class="d-flex align-items-center mb-2"><span class="badge bg-success me-2">Active</span> {{ current_user.subscription_tier|capitalize }} plan</div>
+      <p class="text-muted small mb-3">Subscription ID: {{ current_user.razorpay_subscription_id or '—' }}</p>
+      <form method="POST" action="{{ url_for('billing_bp.cancel') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="btn btn-outline-danger w-100" type="submit">Cancel renewal</button>
+      </form>
+      {% elif current_user.subscription_cancel_at or current_user.razorpay_subscription_id %}
+      <div class="d-flex align-items-center mb-2"><span class="badge bg-secondary me-2">Cancelled</span> {{ (current_user.subscription_tier or 'previous')|capitalize }} plan</div>
+      {% if current_user.subscription_expires %}
+      <p class="text-muted small mb-2">Paid access ended on {{ current_user.subscription_expires.strftime('%b %d, %Y') }}.</p>
+      {% endif %}
+      <form method="POST" action="{{ url_for('billing_bp.reactivate') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="btn btn-primary w-100" type="submit">Resume subscription</button>
+      </form>
+      {% else %}
+      <p class="text-muted small">You are on the Free plan. Upgrade to unlock unlimited imports, application reminders, and weekly reports.</p>
+      <button class="btn btn-primary w-100" data-plan="monthly">Upgrade to Pro</button>
+      {% endif %}
+      <div class="border-top mt-3 pt-3 small text-muted">
+        Billing is handled by Razorpay (INR). Taxes may apply.
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-8">
+    <div class="settings-card p-4 mb-3">
+      <div class="d-flex align-items-center mb-3">
+        <div class="flex-grow-1">
+          <h5 class="mb-1">Choose your plan</h5>
+          <div class="text-muted">Pick monthly flexibility or annual savings.</div>
+        </div>
+        <span class="badge bg-warning text-dark">UPI / Cards / NetBanking</span>
+      </div>
+      <div class="row g-3">
+        <div class="col-md-6">
+          <div class="border rounded p-3 h-100">
+            <div class="d-flex justify-content-between align-items-center mb-2"><span class="text-muted">Pro Monthly</span><span class="badge bg-primary">Popular</span></div>
+            <div class="h3 mb-3">₹999<span class="fs-6 text-muted">/month</span></div>
+            <ul class="text-muted small mb-3">
+              <li>Unlimited concepts & imports</li>
+              <li>Knowledge Connection Map</li>
+              <li>Application reminders</li>
+              <li>Weekly reports</li>
+            </ul>
+            <button class="btn btn-outline-primary w-100" data-plan="monthly">Start monthly</button>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="border rounded p-3 h-100">
+            <div class="d-flex justify-content-between align-items-center mb-2"><span class="text-muted">Pro Annual</span><span class="badge bg-success">Save 25%</span></div>
+            <div class="h3 mb-3">₹8,999<span class="fs-6 text-muted">/year</span></div>
+            <ul class="text-muted small mb-3">
+              <li>Everything in Pro</li>
+              <li>Priority support</li>
+              <li>Export & history included</li>
+              <li>Best for consistent learners</li>
+            </ul>
+            <button class="btn btn-primary w-100" data-plan="annual">Start annual</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="alert alert-info mb-0">
+      After successful payment you'll be redirected automatically. You can cancel anytime; access continues until the period ends.
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+{{ super() }}
+<script>
+  document.querySelectorAll('button[data-plan]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const plan = btn.getAttribute('data-plan');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Starting checkout...';
+      initiateRazorpayCheckout(plan).catch(() => {
+        btn.disabled = false;
+        btn.innerHTML = plan === 'annual' ? 'Start annual' : 'Start monthly';
+      });
+    });
+  });
+</script>
+{% endblock %}

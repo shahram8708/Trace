@@ -1,0 +1,12 @@
+<!doctype html>
+<html>
+<body style="font-family: Arial, sans-serif; background:#f6f9fc; padding:24px;">
+  <div style="max-width:600px; margin:0 auto; background:#fff; border:1px solid #e5e7eb; border-radius:10px; padding:24px;">
+    <h2 style="margin-top:0; color:#111827;">Apply {{ concept.name }} to {{ project.name }}</h2>
+    <p style="color:#4b5563;">A quick application solidifies your understanding. Here's a prompt to guide you:</p>
+    <blockquote style="border-left:4px solid #2563eb; margin:16px 0; padding-left:12px; color:#111827;">{{ prompt_text }}</blockquote>
+    <p style="text-align:center; margin:24px 0;"><a href="{{ base_url }}/projects/{{ project.id }}" style="background:#2563eb; color:#fff; padding:12px 18px; border-radius:8px; text-decoration:none;">Open project</a></p>
+  </div>
+  <p style="color:#9ca3af; font-size:12px; text-align:center; margin-top:12px;">Sent by Trace • {{ base_url }}</p>
+</body>
+</html>

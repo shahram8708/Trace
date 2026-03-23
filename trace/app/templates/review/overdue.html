@@ -1,0 +1,54 @@
+{% extends 'dashboard_base.html' %}
+{% block title %}Overdue Concepts{% endblock %}
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb" class="mb-3">
+  <ol class="breadcrumb mb-0">
+    <li class="breadcrumb-item"><a href="{{ url_for('dashboard_bp.dashboard') }}">Dashboard</a></li>
+    <li class="breadcrumb-item"><a href="{{ url_for('review_bp.hub') }}">Review</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Overdue</li>
+  </ol>
+</nav>
+{% endblock %}
+{% block dashboard_content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h3 class="fw-bold mb-1">Overdue Concepts</h3>
+    <div class="text-danger">{{ overdue_concepts|length }} overdue</div>
+  </div>
+  <a class="btn btn-primary" href="{{ url_for('review_bp.session') }}">Start Review Session</a>
+</div>
+
+{% if overdue_concepts %}
+  {% for domain, concepts in grouped_domains.items() %}
+    <div class="card border-0 shadow-sm mb-3">
+      <div class="card-header bg-white fw-bold">{{ domain }}</div>
+      <div class="list-group list-group-flush">
+        {% for concept in concepts %}
+          {% set days_overdue = (today - concept.next_review_due).days %}
+          <div class="list-group-item d-flex justify-content-between align-items-center">
+            <div>
+              <div class="fw-semibold"><a href="{{ url_for('concepts_bp.detail', concept_id=concept.id) }}">{{ concept.name }}</a></div>
+              <div class="text-muted small">{{ concept.source_item.title if concept.source_item else 'Manual Entry' }}</div>
+            </div>
+            <div class="text-end">
+              <div class="text-danger fw-bold">{{ days_overdue }} days overdue</div>
+              <div class="small text-muted">Retention: {{ (concept.retention_strength * 100)|round(1) }}%</div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  {% endfor %}
+  <div class="text-muted small">All overdue concepts appear at the front of your next review session automatically.</div>
+{% else %}
+  <div class="card border-0 shadow-sm p-4 text-center">
+    <div class="display-5 text-success mb-2">✓</div>
+    <h5>No overdue concepts</h5>
+    <p class="text-muted">Great job staying current.</p>
+    <div class="d-flex gap-2 justify-content-center flex-wrap mt-2">
+      <a class="btn btn-primary" href="{{ url_for('review_bp.session') }}">Start a quick session</a>
+      <a class="btn btn-outline-primary" href="{{ url_for('import_bp.hub') }}">Import new content</a>
+    </div>
+  </div>
+{% endif %}
+{% endblock %}

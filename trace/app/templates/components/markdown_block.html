@@ -1,0 +1,37 @@
+{#
+Reusable markdown renderer block.
+Usage patterns:
+- Basic: {% set use_markdown = True %}<div class="markdown-content">{{ blog_post.content | markdown }}</div>
+- Safe: {% set use_markdown = True %}<div class="markdown-content">{{ user_comment.body | markdown_safe }}</div>
+- TOC: {% set use_markdown = True %}{% include 'components/markdown_block.html' with content=article.body show_toc=True toc_title='Jump to section' %}
+- Detect: {% set use_markdown = True %}{% if note.content | is_markdown %}<div class="markdown-content">{{ note.content | markdown }}</div>{% else %}<p>{{ note.content }}</p>{% endif %}
+#}
+{% set has_content = content is defined and content %}
+{% if has_content %}
+  {% set show_toc = show_toc|default(False) %}
+  {% set toc_title = toc_title|default('Contents') %}
+  {% set css_class = css_class|default('') %}
+  {% set sanitize = sanitize|default(False) %}
+  {% if show_toc %}
+    {% set rendered_content, toc_html = convert_markdown_with_toc(content) %}
+  {% else %}
+    {% set rendered_content = render_markdown(content) %}
+  {% endif %}
+  <div class="markdown-content {{ css_class }}" data-markdown-rendered="true">
+    {% if show_toc and toc_html %}
+      <nav class="markdown-toc" aria-label="{{ toc_title }}">
+        <div class="toc-title">{{ toc_title }}</div>
+        {{ toc_html|safe }}
+      </nav>
+    {% endif %}
+    {% if sanitize %}
+      {{ markdown_to_safe_html(content) | safe }}
+    {% else %}
+      {% if show_toc %}
+        {{ rendered_content | safe }}
+      {% else %}
+        {{ content | markdown }}
+      {% endif %}
+    {% endif %}
+  </div>
+{% endif %}

@@ -1,0 +1,17 @@
+[Unit]
+Description=Trace Gunicorn Service
+After=network.target
+
+[Service]
+User=www-data
+Group=www-data
+WorkingDirectory=/opt/trace
+Environment="FLASK_ENV=production"
+EnvironmentFile=/opt/trace/.env
+ExecStart=/opt/trace/venv/bin/gunicorn --workers 4 --bind 127.0.0.1:8000 run:app
+Restart=always
+RestartSec=5
+TimeoutStopSec=30
+
+[Install]
+WantedBy=multi-user.target

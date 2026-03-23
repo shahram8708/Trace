@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% from 'macros/forms.html' import render_field %}
+{% block title %}Sign Up{% endblock %}
+{% block head_extra %}<link href="{{ url_for('static', filename='css/auth.css') }}" rel="stylesheet">{% endblock %}
+{% block content %}
+<div class="container py-5" style="min-height: 80vh;">
+  <div class="row justify-content-center">
+    <div class="col-lg-5">
+      <div class="auth-card card p-4 shadow-sm">
+        <div class="text-center mb-3">
+          <div class="auth-logo">Trace</div>
+          <h1 class="h4 fw-bold">Create your free account</h1>
+        </div>
+        <form method="post" novalidate>
+          {{ form.hidden_tag() }}
+          {{ render_field(form.email, placeholder='you@example.com') }}
+          {{ render_field(form.first_name, placeholder='Your name (optional)') }}
+          {{ render_field(form.password, placeholder='Create a strong password', id='password') }}
+          <div class="password-strength" id="password-strength"></div>
+          {{ render_field(form.password_confirm, placeholder='Confirm password') }}
+          <div class="d-grid">
+            {{ form.submit(class_='btn btn-brand btn-lg') }}
+          </div>
+        </form>
+        <div class="text-center mt-3 small">
+          Already have an account? <a href="{{ url_for('auth.login') }}">Log in</a>
+        </div>
+        <div class="text-center mt-2 small text-muted">
+          By creating an account, you agree to our <a href="{{ url_for('main.terms') }}">Terms of Service</a> and <a href="{{ url_for('main.privacy') }}">Privacy Policy</a>.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

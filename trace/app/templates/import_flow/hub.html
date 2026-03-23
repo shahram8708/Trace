@@ -1,0 +1,102 @@
+{% extends 'dashboard_base.html' %}
+{% block title %}Import Content{% endblock %}
+{% block head_extra %}<link rel="stylesheet" href="{{ url_for('static', filename='css/import.css') }}">{% endblock %}
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb" class="mb-3">
+  <ol class="breadcrumb mb-0">
+    <li class="breadcrumb-item"><a href="{{ url_for('dashboard_bp.dashboard') }}">Dashboard</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Import</li>
+  </ol>
+</nav>
+{% endblock %}
+{% block dashboard_content %}
+<h2 class="fw-bold">Import Content</h2>
+<p class="text-muted">Add content from any source. Trace extracts the key concepts and builds your review queue.</p>
+{% if limits.import_limit_reached and not current_user.is_premium %}
+  <div class="alert alert-warning">You've reached your monthly import limit. Upgrade to Pro for unlimited imports.</div>
+{% elif limits.should_warn %}
+  <div class="alert alert-info alert-dismissible fade show" role="alert">
+    You've used {{ 5 - limits.imports_remaining }} of 5 free imports this month. Upgrade to Pro for unlimited imports.
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  </div>
+{% endif %}
+<div class="row g-3">
+  <div class="col-12 col-md-6">
+    <div class="import-card card-lift h-100">
+      <div class="icon mb-3"><i class="bi bi-link-45deg"></i></div>
+      <h5 class="fw-bold">Paste a Web Article URL</h5>
+      <p class="text-muted">Import any publicly accessible article, blog post, or web page. Trace fetches and extracts the text automatically.</p>
+      <div class="small text-muted">Medium • Substack • News sites • Blog posts</div>
+      <div class="d-flex align-items-center justify-content-between mt-3">
+        <span class="badge bg-secondary">{{ limits.imports_remaining if limits.imports_remaining is not none else 'Unlimited' }} imports left</span>
+        <a class="btn btn-brand" href="{{ url_for('import_bp.import_url') }}">Import URL</a>
+      </div>
+    </div>
+  </div>
+  <div class="col-12 col-md-6">
+    <div class="import-card card-lift h-100">
+      <div class="icon mb-3"><i class="bi bi-file-text"></i></div>
+      <h5 class="fw-bold">Paste Text Directly</h5>
+      <p class="text-muted">Paste any text — notes, excerpts, course materials, or any content you want to extract concepts from.</p>
+      <div class="d-flex align-items-center justify-content-between mt-3">
+        <span class="badge bg-secondary">{{ limits.imports_remaining if limits.imports_remaining is not none else 'Unlimited' }} imports left</span>
+        <a class="btn btn-brand" href="{{ url_for('import_bp.import_text') }}">Paste Text</a>
+      </div>
+    </div>
+  </div>
+  <div class="col-12 col-md-6">
+    <div class="import-card card-lift h-100 {% if not current_user.is_premium %}pro-locked{% endif %}">
+      <div class="icon mb-3 text-danger"><i class="bi bi-file-pdf"></i></div>
+      <h5 class="fw-bold">Upload a PDF</h5>
+      <p class="text-muted">Upload PDF documents, academic papers, book chapters, or reports up to 20MB.</p>
+      <div class="d-flex align-items-center justify-content-between mt-3">
+        {% if current_user.is_premium %}
+          <a class="btn btn-brand" href="{{ url_for('import_bp.import_pdf') }}">Upload PDF</a>
+        {% else %}
+          <a class="btn btn-outline-secondary" href="{{ url_for('main.pricing') }}"><i class="bi bi-lock"></i> Pro Feature</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="col-12 col-md-6">
+    <div class="import-card card-lift h-100 {% if not current_user.is_premium %}pro-locked{% endif %}">
+      <div class="icon mb-3"><i class="bi bi-book"></i></div>
+      <h5 class="fw-bold">Import Kindle Highlights</h5>
+      <p class="text-muted">Import your Kindle highlight exports. Each book becomes a separate source with its own concept extraction.</p>
+      <div class="d-flex align-items-center justify-content-between mt-3">
+        {% if current_user.is_premium %}
+          <a class="btn btn-brand" href="{{ url_for('import_bp.import_kindle') }}">Import Kindle Highlights</a>
+        {% else %}
+          <a class="btn btn-outline-secondary" href="{{ url_for('main.pricing') }}"><i class="bi bi-lock"></i> Pro Feature</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card border-0 shadow-sm mt-4">
+  <div class="card-header bg-white d-flex justify-content-between align-items-center">
+    <div>
+      <h5 class="mb-0">Recent Imports</h5>
+      <small class="text-muted">Your last 5 sources</small>
+    </div>
+  </div>
+  <div class="card-body">
+    {% if recent_imports %}
+      <div class="list-group list-group-flush">
+        {% for item in recent_imports %}
+          <div class="list-group-item d-flex justify-content-between align-items-start">
+            <div>
+              <div class="fw-semibold">{{ item.title or 'Untitled' }}</div>
+              <div class="text-muted small">{{ item.source_type|capitalize }} • {{ item.import_date|time_ago }}</div>
+            </div>
+            <a class="btn btn-sm btn-outline-primary" href="{{ url_for('import_bp.review', item_id=item.id) }}">Open</a>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="text-center py-4 text-muted">No imports yet.</div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

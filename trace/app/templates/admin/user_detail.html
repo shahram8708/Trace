@@ -1,0 +1,94 @@
+{% extends 'dashboard_base.html' %}
+{% block title %}User Detail{% endblock %}
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb" class="mb-3">
+  <ol class="breadcrumb mb-0">
+    <li class="breadcrumb-item"><a href="{{ url_for('dashboard_bp.dashboard') }}">Dashboard</a></li>
+    <li class="breadcrumb-item"><a href="{{ url_for('admin_bp.panel') }}">Admin</a></li>
+    <li class="breadcrumb-item"><a href="{{ url_for('admin_bp.users') }}">Users</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{{ user.email }}</li>
+  </ol>
+</nav>
+{% endblock %}
+{% block dashboard_content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div>
+    <h2 class="mb-0">{{ user.email }}</h2>
+    <div class="text-muted">User ID {{ user.id }}</div>
+  </div>
+  <a class="btn btn-outline-secondary" href="{{ url_for('admin_bp.users') }}">Back to users</a>
+</div>
+
+<div class="row g-3 mb-3">
+  <div class="col-md-3"><div class="stat-card"><div class="text-muted small">Tier</div><div class="h5 mb-0">{{ user.subscription_tier|capitalize }}</div></div></div>
+  <div class="col-md-3"><div class="stat-card"><div class="text-muted small">Concepts</div><div class="h5 mb-0">{{ concept_count }}</div></div></div>
+  <div class="col-md-3"><div class="stat-card"><div class="text-muted small">Reviews</div><div class="h5 mb-0">{{ review_count }}</div></div></div>
+  <div class="col-md-3"><div class="stat-card"><div class="text-muted small">Created</div><div class="h6 mb-0">{{ user.created_at.strftime('%b %d, %Y') }}</div></div></div>
+</div>
+
+<div class="settings-card p-4 mb-3">
+  <div class="row g-3">
+    <div class="col-md-4">
+      <div class="fw-semibold mb-1">Verification</div>
+      {% if user.is_verified %}<span class="badge bg-success">Verified</span>{% else %}<span class="badge bg-danger">Unverified</span>{% endif %}
+      <form class="mt-2" method="POST" action="{{ url_for('admin_bp.resend_verify', user_id=user.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="btn btn-outline-secondary btn-sm" type="submit">Resend email</button>
+      </form>
+    </div>
+    <div class="col-md-4">
+      <div class="fw-semibold mb-1">Premium status</div>
+      {% if user.is_premium %}
+      <span class="badge bg-success">Active</span>
+      <form class="mt-2" method="POST" action="{{ url_for('admin_bp.revoke_premium', user_id=user.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="btn btn-outline-danger btn-sm" type="submit">Revoke premium</button>
+      </form>
+      {% else %}
+      <span class="badge bg-secondary">Free</span>
+      <form class="mt-2" method="POST" action="{{ url_for('admin_bp.grant_premium', user_id=user.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="btn btn-outline-primary btn-sm" type="submit">Grant premium (30d)</button>
+      </form>
+      {% endif %}
+    </div>
+    <div class="col-md-4">
+      <div class="fw-semibold mb-1">Last login</div>
+      <div>{{ user.last_login.strftime('%b %d %H:%M') if user.last_login else 'Never' }}</div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-6">
+    <div class="settings-card p-3 h-100">
+      <div class="d-flex justify-content-between align-items-center mb-2"><h6 class="mb-0">Recent sources</h6><span class="badge badge-soft text-dark">{{ recent_sources|length }}</span></div>
+      <ul class="list-group list-group-flush">
+        {% for s in recent_sources %}
+        <li class="list-group-item">
+          <div class="fw-semibold">{{ s.title or 'Source' }}</div>
+          <div class="text-muted small">{{ s.type|capitalize }} • {{ s.import_date.strftime('%b %d %H:%M') }}</div>
+        </li>
+        {% else %}
+        <li class="list-group-item text-muted">No imports yet.</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="settings-card p-3 h-100">
+      <div class="d-flex justify-content-between align-items-center mb-2"><h6 class="mb-0">Recent reviews</h6><span class="badge badge-soft text-dark">{{ recent_reviews|length }}</span></div>
+      <ul class="list-group list-group-flush">
+        {% for r in recent_reviews %}
+        <li class="list-group-item">
+          <div class="fw-semibold">Concept {{ r.concept_id }}</div>
+          <div class="text-muted small">{{ r.reviewed_at.strftime('%b %d %H:%M') }} • Rating {{ r.ease_rating or '—' }}</div>
+        </li>
+        {% else %}
+        <li class="list-group-item text-muted">No reviews yet.</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,52 @@
+{% extends 'dashboard_base.html' %}
+{% block title %}Onboarding - Schedule{% endblock %}
+{% block head_extra %}<link rel="stylesheet" href="{{ url_for('static', filename='css/import.css') }}">{% endblock %}
+{% block dashboard_content %}
+<div class="review-sticky-header mb-3">
+  <div class="d-flex align-items-center gap-3">
+    <div class="d-flex align-items-center gap-2 text-muted"><div class="step-number">1</div><span>Your Domains</span></div>
+    <div class="flex-grow-1 border-top" style="height:1px;"></div>
+    <div class="d-flex align-items-center gap-2 text-muted"><div class="step-number">2</div><span>How You Learn</span></div>
+    <div class="flex-grow-1 border-top" style="height:1px;"></div>
+    <div class="d-flex align-items-center gap-2"><div class="step-number bg-brand text-muted border-0">3</div><span>Your Schedule</span></div>
+  </div>
+</div>
+
+<h2 class="fw-bold">When would you like your daily review reminder?</h2>
+<p class="text-muted">We'll send you a reminder at this time each day when you have concepts ready to review. You can change this anytime in settings.</p>
+<form method="POST" action="{{ url_for('onboarding.step3') }}" id="timeForm">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div class="d-flex flex-wrap gap-2">
+    {% for time in review_times %}
+      <label class="btn btn-outline-primary rounded-pill px-3 py-2 mb-2 time-pill {% if time.value == '08:00' %}active{% endif %}">
+        <input type="radio" class="d-none" name="review_time" value="{{ time.value }}" {% if time.value == '08:00' %}checked{% endif %}>
+        {{ time.label }}
+      </label>
+    {% endfor %}
+  </div>
+  <p class="text-muted mt-3">We'll send you an email reminder when you have concepts ready to review. No emails if your queue is empty.</p>
+  <div class="mt-4 d-flex align-items-center gap-3">
+    <a href="{{ url_for('onboarding.step2') }}" class="text-muted">← Back</a>
+    <button type="submit" class="btn btn-brand" id="completeSetup">Complete Setup →</button>
+    <a href="{{ url_for('onboarding.skip') }}" class="text-muted">Skip for now →</a>
+  </div>
+</form>
+{% endblock %}
+{% block scripts %}
+<script>
+  document.querySelectorAll('.time-pill').forEach((pill) => {
+    pill.addEventListener('click', (e) => {
+      document.querySelectorAll('.time-pill').forEach(p => p.classList.remove('active'));
+      pill.classList.add('active');
+      pill.querySelector('input').checked = true;
+    });
+  });
+  document.getElementById('timeForm').addEventListener('submit', () => {
+    const btn = document.getElementById('completeSetup');
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Completing...';
+    }
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,18 @@
+{% macro render_field(field, placeholder=None, rows=None, id=None, class_='form-control') %}
+  <div class="mb-3">
+    {% if field.type == 'BooleanField' %}
+      <div class="form-check">
+        {{ field(class_='form-check-input', id=id) }}
+        <label class="form-check-label" for="{{ id or field.id }}">{{ field.label.text }}</label>
+      </div>
+    {% else %}
+      {{ field.label(class_='form-label') }}
+      {{ field(class_=class_, placeholder=placeholder, rows=rows, id=id) }}
+    {% endif %}
+    {% if field.errors %}
+      <div class="invalid-feedback d-block">
+        {% for error in field.errors %}{{ error }}{% endfor %}
+      </div>
+    {% endif %}
+  </div>
+{% endmacro %}

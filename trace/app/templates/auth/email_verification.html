@@ -1,0 +1,15 @@
+<div style="font-family: Inter, Arial, sans-serif; color: #1A202C; background: #FAFAF8; padding: 24px;">
+  <div style="max-width: 640px; margin: 0 auto; background: #ffffff; border-radius: 12px; padding: 24px; border: 1px solid #E5E7EB;">
+    <h1 style="color: #1B4F72; font-weight: 800;">Trace</h1>
+    <p style="font-size: 16px;">Hi {{ user.get_display_name() }},</p>
+    <p>Welcome to Trace! Verify your email to activate your account and start building lasting expertise.</p>
+    <p style="text-align: center; margin: 32px 0;">
+      <a href="{{ verify_url }}" style="background: linear-gradient(135deg, #1B4F72, #148F77); color: #fff; padding: 14px 28px; border-radius: 999px; text-decoration: none; font-weight: 600;">Verify Email</a>
+    </p>
+    <p>This link expires in 24 hours. If the button doesn't work, copy and paste this link:</p>
+    <p style="word-break: break-all; color: #1B4F72;">{{ verify_url }}</p>
+    <p style="color: #6B7280; font-size: 14px;">If you didn't create this account, you can safely ignore this email.</p>
+    <hr style="margin: 24px 0;">
+    <p style="font-size: 14px; color: #6B7280;">Trace — Professional Knowledge Retention Platform</p>
+  </div>
+</div>

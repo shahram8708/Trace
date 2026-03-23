@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+{% block title %}How It Works{% endblock %}
+{% block content %}
+<section class="py-5 bg-white">
+  <div class="container">
+    <div class="row align-items-center mb-5">
+      <div class="col-lg-7">
+        <h1 class="fw-bold display-5">How Trace Works</h1>
+        <p class="lead text-muted">Trace blends spaced repetition, active recall, and AI-assisted concept extraction so what you learn becomes usable expertise.</p>
+      </div>
+      <div class="col-lg-5">
+        <div class="card p-4 card-lift">
+          <h5 class="fw-semibold mb-2">The Problem</h5>
+          <p class="text-muted mb-0">The Ebbinghaus Forgetting Curve shows memory decays sharply without deliberate review. Passive consumption—highlighting, re-reading, bookmarking—doesn't create durable neural connections.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="mb-5">
+      <h3 class="fw-bold mb-3">The Science</h3>
+      <div class="row g-4">
+        <div class="col-md-4">
+          <div class="card h-100 p-4 card-lift">
+            <h6 class="fw-semibold">Spaced Repetition</h6>
+            <p class="text-muted">Trace schedules concepts using SM-2 so you review right before you're about to forget, strengthening long-term retention efficiently.</p>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card h-100 p-4 card-lift">
+            <h6 class="fw-semibold">Active Recall</h6>
+            <p class="text-muted">You answer in your own words. Generating answers drives deeper encoding than recognition-based studying.</p>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card h-100 p-4 card-lift">
+            <h6 class="fw-semibold">Testing Effect</h6>
+            <p class="text-muted">Every recall attempt is a low-stakes test that boosts retention more than additional reading.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mb-5">
+      <h3 class="fw-bold mb-4">Step-by-step journey</h3>
+      <div class="row g-4 align-items-center mb-4">
+        <div class="col-md-6">
+          <div class="screenshot-placeholder">Import</div>
+        </div>
+        <div class="col-md-6">
+          <h5 class="fw-semibold">Import anything</h5>
+          <p class="text-muted">Paste a link, upload a PDF, drop Kindle highlights, or paste raw text. Trace cleans the content and prepares it for extraction.</p>
+        </div>
+      </div>
+      <div class="row g-4 align-items-center mb-4">
+        <div class="col-md-6 order-md-2">
+          <div class="screenshot-placeholder">AI Extraction</div>
+        </div>
+        <div class="col-md-6 order-md-1">
+          <h5 class="fw-semibold">Gemini concept extraction</h5>
+          <p class="text-muted">Gemini identifies the key concepts, definitions, and relationships. You review and confirm to keep quality high.</p>
+        </div>
+      </div>
+      <div class="row g-4 align-items-center mb-4">
+        <div class="col-md-6">
+          <div class="screenshot-placeholder">Daily Review</div>
+        </div>
+        <div class="col-md-6">
+          <h5 class="fw-semibold">Daily review</h5>
+          <p class="text-muted">A focused 10-minute queue uses active recall prompts and SM-2 scheduling to reinforce memory efficiently.</p>
+        </div>
+      </div>
+      <div class="row g-4 align-items-center mb-4">
+        <div class="col-md-6 order-md-2">
+          <div class="screenshot-placeholder">Knowledge Map</div>
+        </div>
+        <div class="col-md-6 order-md-1">
+          <h5 class="fw-semibold">Knowledge map</h5>
+          <p class="text-muted">Visualize how ideas relate across books, articles, and courses. Build a real mental model, not isolated notes.</p>
+        </div>
+      </div>
+      <div class="row g-4 align-items-center mb-4">
+        <div class="col-md-6">
+          <div class="screenshot-placeholder">Application Prompts</div>
+        </div>
+        <div class="col-md-6">
+          <h5 class="fw-semibold">Application reminders</h5>
+          <p class="text-muted">Tie concepts to projects and receive prompts to apply them in real work. Learning becomes action.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="mb-5">
+      <h3 class="fw-bold mb-3">FAQ</h3>
+      <div class="accordion" id="faqAccordion">
+        {% set faqs = [
+          ('What makes Trace different from flashcards?', 'Trace combines AI extraction with spaced repetition and application prompts so you spend time applying, not building cards.'),
+          ('How long do reviews take?', 'Most users spend 8–12 minutes a day. Sessions stay lightweight but consistent.'),
+          ('Do I keep ownership of my data?', 'Yes. Your imports and concepts remain yours. You can request export anytime.'),
+          ('Is my content sent to AI?', 'For extraction, content is sent securely to Google Gemini. We never use it for model training.'),
+          ('Can I pause reviews?', 'Yes. You can snooze a day; Trace reschedules without losing progress.'),
+          ('Does Trace work offline?', 'The web app requires connectivity, but offline-friendly mobile is on our roadmap.'),
+        ] %}
+        {% for item in faqs %}
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="heading{{ loop.index0 }}">
+            <button class="accordion-button {% if loop.index0>0 %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ loop.index0 }}" aria-expanded="{{ 'true' if loop.index0==0 else 'false' }}" aria-controls="collapse{{ loop.index0 }}">
+              {{ item[0] }}
+            </button>
+          </h2>
+          <div id="collapse{{ loop.index0 }}" class="accordion-collapse collapse {% if loop.index0==0 %}show{% endif %}" aria-labelledby="heading{{ loop.index0 }}" data-bs-parent="#faqAccordion">
+            <div class="accordion-body text-muted">{{ item[1] }}</div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="text-center py-5 bg-light rounded-3 card-lift">
+      <h3 class="fw-bold mb-3">Ready to remember what matters?</h3>
+      <p class="text-muted mb-4">Turn your reading, courses, and meetings into lasting expertise.</p>
+      <a class="btn btn-brand btn-lg" href="{{ url_for('auth.signup') }}">Start for Free</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

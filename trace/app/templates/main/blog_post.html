@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% block title %}{{ post.title }}{% endblock %}
+{% block meta_description %}{{ (post.meta_description or (post.content|striptags))[:160] }}{% endblock %}
+{% block head_extra %}
+  {% set absolute_url = url_for('main.blog_post', slug=post.slug, _external=True) %}
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="{{ post.title }}">
+  <meta property="og:description" content="{{ (post.meta_description or (post.content|striptags))[:200] }}">
+  <meta property="og:url" content="{{ absolute_url }}">
+  {% if post.cover_image_url %}<meta property="og:image" content="{{ post.cover_image_url }}">{% endif %}
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{{ post.title }}">
+  <meta name="twitter:description" content="{{ (post.meta_description or (post.content|striptags))[:200] }}">
+  {% if post.cover_image_url %}<meta name="twitter:image" content="{{ post.cover_image_url }}">{% endif %}
+{% endblock %}
+{% block content %}
+<section class="py-5 bg-white">
+  <div class="container" style="max-width: 820px;">
+    <nav class="mb-3 small"><a href="{{ url_for('main.index') }}">Home</a> › <a href="{{ url_for('main.blog_index') }}">Blog</a> › {{ post.title }}</nav>
+    <h1 class="fw-bold mb-3">{{ post.title }}</h1>
+    <div class="text-muted mb-4">{{ post.author }} · {{ post.published_at.strftime('%b %d, %Y') if post.published_at else '' }}</div>
+    {% if post.cover_image_url %}
+      <div class="ratio ratio-16x9 mb-4 rounded-3" style="background-image: url('{{ post.cover_image_url }}'); background-size: cover; background-position: center;"></div>
+    {% endif %}
+    <article class="mb-5">
+      {{ post.content|safe }}
+    </article>
+    <div class="mb-5">
+      <h5 class="fw-semibold">Related posts</h5>
+      <div class="row g-3">
+        {% for related in related_posts %}
+          <div class="col-md-4">
+            <div class="card h-100 card-lift">
+              <div class="card-body">
+                <h6 class="fw-semibold"><a class="text-decoration-none" href="{{ url_for('main.blog_post', slug=related.slug) }}">{{ related.title }}</a></h6>
+                <div class="small text-muted">{{ related.author }}</div>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="text-center bg-light p-4 rounded-3 card-lift">
+      <h5 class="fw-bold mb-2">Turn what you read into expertise</h5>
+      <a class="btn btn-brand" href="{{ url_for('auth.signup') }}">Start for Free</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

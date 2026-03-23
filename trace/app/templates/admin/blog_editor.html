@@ -1,0 +1,105 @@
+{% extends 'dashboard_base.html' %}
+{% block title %}Blog Editor{% endblock %}
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb" class="mb-3">
+  <ol class="breadcrumb mb-0">
+    <li class="breadcrumb-item"><a href="{{ url_for('dashboard_bp.dashboard') }}">Dashboard</a></li>
+    <li class="breadcrumb-item"><a href="{{ url_for('admin_bp.panel') }}">Admin</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Blog</li>
+  </ol>
+</nav>
+{% endblock %}
+{% block dashboard_content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div>
+    <h2 class="mb-0">Blog</h2>
+    <div class="text-muted">Publish and manage Trace content.</div>
+  </div>
+  <a class="btn btn-outline-secondary" href="{{ url_for('admin_bp.panel') }}">Back to overview</a>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-5">
+    <div class="settings-card p-3 h-100">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h6 class="mb-0">Posts</h6>
+        <a class="btn btn-sm btn-primary" href="{{ url_for('admin_bp.new_post') }}">New post</a>
+      </div>
+      <ul class="list-group list-group-flush">
+        {% for post in posts %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <div>
+            <div class="fw-semibold"><a href="{{ url_for('admin_bp.edit_post', post_id=post.id) }}">{{ post.title or 'Untitled' }}</a></div>
+            <div class="text-muted small">/{{ post.slug }}</div>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <span class="badge {{ 'bg-success' if post.is_published else 'bg-secondary' }}">{{ 'Published' if post.is_published else 'Draft' }}</span>
+            <button class="btn btn-sm btn-outline-secondary toggle-publish" data-id="{{ post.id }}">{{ 'Unpublish' if post.is_published else 'Publish' }}</button>
+          </div>
+        </li>
+        {% else %}
+        <li class="list-group-item text-muted">No posts yet.</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="col-lg-7">
+    <div class="settings-card p-4 h-100">
+      <h5 class="mb-3">{{ 'Edit Post' if editing else 'New Post' }}</h5>
+      <form method="POST" action="{{ url_for('admin_bp.edit_post', post_id=editing.id) if editing else url_for('admin_bp.new_post') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="mb-3">
+          <label class="form-label">Title</label>
+          <input class="form-control" type="text" name="title" value="{{ editing.title if editing else '' }}" placeholder="Post title">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Slug</label>
+          <input class="form-control" type="text" name="slug" value="{{ editing.slug if editing else '' }}" placeholder="auto-generated if empty">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Author</label>
+          <input class="form-control" type="text" name="author" value="{{ editing.author if editing else 'Trace Team' }}">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Meta description</label>
+          <input class="form-control" type="text" name="meta_description" value="{{ editing.meta_description if editing else '' }}" maxlength="160">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Cover image URL</label>
+          <input class="form-control" type="url" name="cover_image_url" value="{{ editing.cover_image_url if editing else '' }}" placeholder="https://images.example.com/cover.jpg">
+          <div class="form-text">Shown on blog cards and the article header. Leave blank to use the default gradient.</div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Content (Markdown allowed)</label>
+          <textarea class="form-control" name="content" rows="10" placeholder="Write your post...">{{ editing.content if editing else '' }}</textarea>
+        </div>
+        <div class="form-check mb-3">
+          <input class="form-check-input" type="checkbox" name="is_published" id="is_published" {% if editing and editing.is_published %}checked{% endif %}>
+          <label class="form-check-label" for="is_published">Published</label>
+        </div>
+        <div class="d-flex gap-2">
+          <button class="btn btn-primary" type="submit">Save</button>
+          {% if editing %}
+          <a class="btn btn-outline-secondary" href="{{ url_for('admin_bp.new_post') }}">Create new</a>
+          {% endif %}
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+{{ super() }}
+<script>
+  document.querySelectorAll('.toggle-publish').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const id = btn.getAttribute('data-id');
+      fetch(`/admin/content/${id}/publish`, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content },
+      }).then(() => window.location.reload());
+    });
+  });
+</script>
+{% endblock %}

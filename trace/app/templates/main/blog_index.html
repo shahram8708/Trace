@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% block title %}Blog{% endblock %}
+{% block meta_description %}Insights on learning, memory, and professional expertise from the Trace team.{% endblock %}
+{% block head_extra %}
+  {% set absolute_url = url_for('main.blog_index', _external=True) %}
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Trace Blog">
+  <meta property="og:description" content="Insights on learning, memory, and professional expertise from the Trace team.">
+  <meta property="og:url" content="{{ absolute_url }}">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Trace Blog">
+  <meta name="twitter:description" content="Insights on learning, memory, and professional expertise from the Trace team.">
+{% endblock %}
+{% block content %}
+<section class="py-5 bg-white">
+  <div class="container">
+    <h1 class="display-5 fw-bold mb-4">The Trace Blog — Insights on learning, memory, and professional expertise</h1>
+    {% if not posts %}
+      <div class="text-center py-5 bg-light rounded-3 card-lift">
+        <div class="display-4 mb-3">✍️</div>
+        <p class="lead text-muted">Coming soon — we're writing articles about the science of retention.</p>
+      </div>
+    {% else %}
+      <div class="row g-4">
+        {% for post in posts %}
+          <div class="col-md-4">
+            <div class="card h-100 card-lift">
+              <div class="ratio ratio-16x9 rounded-top" style="{% if post.cover_image_url %}background-image: url('{{ post.cover_image_url }}'); background-size: cover; background-position: center;{% else %}background: linear-gradient(135deg,#1B4F72,#148F77);{% endif %}"></div>
+              <div class="card-body">
+                <h5 class="card-title"><a class="text-decoration-none" href="{{ url_for('main.blog_post', slug=post.slug) }}">{{ post.title }}</a></h5>
+                <div class="text-muted small mb-2">{{ post.author }} · {{ post.published_at.strftime('%b %d, %Y') if post.published_at else '' }}</div>
+                <p class="text-muted">{{ post.meta_description or post.content[:140] }}...</p>
+                <a href="{{ url_for('main.blog_post', slug=post.slug) }}" class="fw-semibold">Read More →</a>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+      <nav aria-label="Blog pagination" class="mt-4">
+        <ul class="pagination">
+          {% if pagination.has_prev %}
+          <li class="page-item"><a class="page-link" href="{{ url_for('main.blog_index', page=pagination.prev_num) }}">Previous</a></li>
+          {% else %}
+          <li class="page-item disabled"><span class="page-link">Previous</span></li>
+          {% endif %}
+          <li class="page-item disabled"><span class="page-link">Page {{ pagination.page }} of {{ pagination.pages }}</span></li>
+          {% if pagination.has_next %}
+          <li class="page-item"><a class="page-link" href="{{ url_for('main.blog_index', page=pagination.next_num) }}">Next</a></li>
+          {% else %}
+          <li class="page-item disabled"><span class="page-link">Next</span></li>
+          {% endif %}
+        </ul>
+      </nav>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

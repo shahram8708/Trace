@@ -1,0 +1,119 @@
+{% extends 'dashboard_base.html' %}
+{% block title %}My Concepts{% endblock %}
+{% block head_extra %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+{% endblock %}
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb" class="mb-3">
+  <ol class="breadcrumb mb-0">
+    <li class="breadcrumb-item"><a href="{{ url_for('dashboard_bp.dashboard') }}">Dashboard</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Concepts</li>
+  </ol>
+</nav>
+{% endblock %}
+{% block dashboard_content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+  <div>
+    <h3 class="fw-bold mb-0">My Concepts</h3>
+    <div class="text-muted">{{ total_count }} concepts across {{ all_domains|length }} domains</div>
+    {% if source_id %}<div class="text-muted small">Filtered to a single source</div>{% endif %}
+  </div>
+  <a class="btn btn-primary" href="{{ url_for('import_bp.import_text') }}">Add Concept Manually</a>
+</div>
+
+<form class="card border-0 shadow-sm p-3 mb-3" method="get" action="{{ url_for('concepts_bp.library') }}">
+  {% if source_id %}<input type="hidden" name="source_id" value="{{ source_id }}">{% endif %}
+  <div class="row g-2 align-items-center">
+    <div class="col-lg-6">
+      <div class="input-group">
+        <span class="input-group-text"><i class="bi bi-search"></i></span>
+        <input type="text" class="form-control" name="search" value="{{ search }}" placeholder="Search concepts...">
+      </div>
+    </div>
+    <div class="col-lg-3">
+      <select class="form-select" name="sort">
+        <option value="" {% if not sort %}selected{% endif %}>Due Soonest</option>
+        <option value="retention" {% if sort=='retention' %}selected{% endif %}>Weakest Retention</option>
+        <option value="date" {% if sort=='date' %}selected{% endif %}>Most Recent</option>
+        <option value="name" {% if sort=='name' %}selected{% endif %}>Alphabetical</option>
+        <option value="overdue" {% if sort=='overdue' %}selected{% endif %}>Overdue First</option>
+      </select>
+    </div>
+    <div class="col-lg-3 text-lg-end">
+      <button class="btn btn-primary" type="submit">Apply</button>
+    </div>
+  </div>
+  <div class="mt-3 d-flex flex-wrap gap-2 align-items-center">
+    <a class="badge bg-light text-dark text-decoration-none {% if not domain %}border border-primary{% endif %}" href="{{ url_for('concepts_bp.library', search=search, sort=sort, source_id=source_id) }}">All Domains</a>
+    {% for d in all_domains %}
+      <a class="badge bg-light text-dark text-decoration-none {% if domain==d %}border border-primary{% endif %}" href="{{ url_for('concepts_bp.library', domain=d, search=search, sort=sort, source_id=source_id) }}">{{ d }}</a>
+    {% endfor %}
+    <span class="text-muted small ms-auto">Showing {{ concepts|length }} of {{ total_count }}</span>
+  </div>
+</form>
+
+{% if concepts %}
+<div class="row g-3">
+  {% for concept in concepts %}
+    <div class="col-12 col-md-6 col-lg-4">
+      <a class="concept-card" href="{{ url_for('concepts_bp.detail', concept_id=concept.id) }}">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+          <span class="domain-badge domain-{{ (concept.domain_tag or 'general')|lower|replace(' ', '-') }}">{{ concept.domain_tag or 'General' }}</span>
+          {% if concept.is_mature %}<span class="badge bg-success">Mature</span>{% endif %}
+        </div>
+        <div class="fw-semibold mb-1 text-truncate">{{ concept.name }}</div>
+        <div class="text-muted small line-clamp-2">{{ concept.description }}</div>
+        <div class="mt-3">
+          <div class="progress retention-bar">
+            {% set pct = (concept.retention_strength or 0) * 100 %}
+            {% set color = pct >= 80 and 'bg-success' or (pct >=50 and 'bg-warning' or 'bg-danger') %}
+            <div class="progress-bar {{ color }}" style="width: {{ pct|round(0) }}%"></div>
+          </div>
+          <div class="d-flex justify-content-between align-items-center small text-muted mt-1">
+            <span>{{ pct|round(0) }}% retained</span>
+            {% if concept.next_review_due %}
+              {% set days = (concept.next_review_due - today).days %}
+              {% if days < 0 %}<span class="text-danger">Overdue by {{ days|abs }} days</span>
+              {% elif days == 0 %}<span>Due today</span>
+              {% elif days == 1 %}<span>Due tomorrow</span>
+              {% else %}<span>Due in {{ days }} days</span>{% endif %}
+            {% else %}
+              <span>Not scheduled</span>
+            {% endif %}
+          </div>
+        </div>
+        <div class="mt-2 text-muted small text-truncate">{{ concept.source_item.title if concept.source_item else 'Manual Entry' }}</div>
+      </a>
+    </div>
+  {% endfor %}
+</div>
+{% else %}
+  <div class="card border-0 shadow-sm p-4 text-center">
+    <div class="display-5 text-muted mb-2"><i class="bi bi-inbox"></i></div>
+    {% if search or domain %}
+      <h5>No concepts match your search.</h5>
+      <a class="btn btn-outline-primary" href="{{ url_for('concepts_bp.library') }}">Clear filters</a>
+    {% else %}
+      <h5>Start your library</h5>
+      <p class="text-muted">Import content to generate concepts, or add one manually.</p>
+      <a class="btn btn-primary" href="{{ url_for('import_bp.hub') }}">Import content</a>
+    {% endif %}
+  </div>
+{% endif %}
+
+{% if pagination.pages > 1 %}
+<nav aria-label="Concept pagination" class="mt-3">
+  <ul class="pagination justify-content-center">
+    <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}"><a class="page-link" href="{{ url_for('concepts_bp.library', page=pagination.prev_num, search=search, domain=domain, sort=sort, source_id=source_id) if pagination.has_prev else '#' }}">Previous</a></li>
+    {% for p in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+      {% if p %}
+        <li class="page-item {% if p == pagination.page %}active{% endif %}"><a class="page-link" href="{{ url_for('concepts_bp.library', page=p, search=search, domain=domain, sort=sort, source_id=source_id) }}">{{ p }}</a></li>
+      {% else %}
+        <li class="page-item disabled"><span class="page-link">…</span></li>
+      {% endif %}
+    {% endfor %}
+    <li class="page-item {% if not pagination.has_next %}disabled{% endif %}"><a class="page-link" href="{{ url_for('concepts_bp.library', page=pagination.next_num, search=search, domain=domain, sort=sort, source_id=source_id) if pagination.has_next else '#' }}">Next</a></li>
+  </ul>
+</nav>
+{% endif %}
+{% endblock %}

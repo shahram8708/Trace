@@ -1,0 +1,7 @@
+Hi {{ user.first_name or 'there' }},
+
+Please verify your Trace account so you can start importing and reviewing your concepts.
+
+Verify link: {{ verify_link }}
+
+If you didn't request this, you can ignore the email.

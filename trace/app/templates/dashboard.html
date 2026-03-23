@@ -1,0 +1,109 @@
+{% extends 'dashboard_base.html' %}
+{% block title %}Dashboard{% endblock %}
+{% block dashboard_content %}
+<div class="row g-4">
+  <div class="col-md-3">
+    <div class="card shadow-sm border-0 h-100">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="text-muted">Due today</span>
+          <i class="bi bi-arrow-repeat text-brand"></i>
+        </div>
+        <h2 class="fw-bold mb-1">{{ stats.due_count }}</h2>
+        <small class="text-muted">Concepts ready for review</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card shadow-sm border-0 h-100">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="text-muted">Active concepts</span>
+          <i class="bi bi-layers text-brand"></i>
+        </div>
+        <h2 class="fw-bold mb-1">{{ stats.active_count }}</h2>
+        <small class="text-muted">{{ stats.domain_count }} domains</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card shadow-sm border-0 h-100">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="text-muted">Mature concepts</span>
+          <i class="bi bi-shield-check text-brand"></i>
+        </div>
+        <h2 class="fw-bold mb-1">{{ stats.mature_count }}</h2>
+        <small class="text-muted">Strong retention</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card shadow-sm border-0 h-100">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="text-muted">Current streak</span>
+          <i class="bi bi-fire text-warning"></i>
+        </div>
+        <h2 class="fw-bold mb-1">{{ stats.streak }} days</h2>
+        <small class="text-muted">Keep it going!</small>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card border-0 shadow-sm mt-4">
+  <div class="card-body d-flex align-items-center justify-content-between">
+    <div>
+      <h4 class="mb-1">Ready to review</h4>
+      <p class="text-muted mb-0">
+        {{ stats.due_count }} concepts are waiting. Jump in to keep your streak alive.
+      </p>
+    </div>
+    <a class="btn btn-primary" href="{{ url_for('review_bp.session') }}">
+      Start review session
+    </a>
+  </div>
+</div>
+
+<div class="card border-0 shadow-sm mt-4">
+  <div class="card-body d-flex align-items-center justify-content-between">
+    <div>
+      <h4 class="mb-1">Build your library</h4>
+      <p class="text-muted mb-0">Import content to start extracting concepts with Gemini.</p>
+    </div>
+    <a class="btn btn-brand" href="{{ url_for('import_bp.hub') }}"><i class="bi bi-plus-circle me-2"></i>Import content</a>
+  </div>
+</div>
+
+<div class="card border-0 shadow-sm mt-4">
+  <div class="card-header bg-white d-flex justify-content-between align-items-center">
+    <div>
+      <h5 class="mb-0">Recent imports</h5>
+      <small class="text-muted">Your latest sources</small>
+    </div>
+    <a href="{{ url_for('import_bp.hub') }}" class="small text-brand">Go to import hub</a>
+  </div>
+  <div class="card-body">
+    {% if recent_imports %}
+      <div class="list-group list-group-flush">
+        {% for item in recent_imports %}
+          <div class="list-group-item d-flex justify-content-between align-items-start">
+            <div>
+              <div class="fw-semibold">{{ item.title or 'Untitled' }}</div>
+              <div class="text-muted small">{{ item.source_type|capitalize }} • Imported {{ item.import_date|time_ago }}</div>
+            </div>
+            <a class="btn btn-sm btn-outline-primary" href="{{ url_for('import_bp.review', item_id=item.id) }}">Review</a>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="text-center py-4">
+        <div class="display-5 text-muted mb-2"><i class="bi bi-inbox"></i></div>
+        <p class="mb-2">No imports yet. Import your first source to get started.</p>
+        <a class="btn btn-brand" href="{{ url_for('import_bp.hub') }}">Import now</a>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

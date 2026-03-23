@@ -1,0 +1,74 @@
+{% extends 'dashboard_base.html' %}
+{% block title %}Onboarding - Domains{% endblock %}
+{% block head_extra %}<link rel="stylesheet" href="{{ url_for('static', filename='css/import.css') }}">{% endblock %}
+{% block dashboard_content %}
+<div class="review-sticky-header mb-3">
+  <div class="d-flex align-items-center gap-3">
+    <div class="d-flex align-items-center gap-2">
+      <div class="step-number bg-brand text-muted border-0">1</div>
+      <div class="text-muted">Your Domains</div>
+    </div>
+    <div class="flex-grow-1 border-top" style="height:1px;"></div>
+    <div class="d-flex align-items-center gap-2 text-muted"><div class="step-number">2</div><span>How You Learn</span></div>
+    <div class="flex-grow-1 border-top" style="height:1px;"></div>
+    <div class="d-flex align-items-center gap-2 text-muted"><div class="step-number">3</div><span>Your Schedule</span></div>
+  </div>
+</div>
+
+<h2 class="fw-bold">What do you most want to build expertise in?</h2>
+<p class="text-muted">Select up to 5 domains. You can always add more later.</p>
+<div id="domainWarning" class="alert alert-warning d-none py-2 px-3">You can select up to 5 domains.</div>
+<form method="POST" action="{{ url_for('onboarding.step1') }}" id="domainForm">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div class="row g-3">
+    {% for domain in domains %}
+      <div class="col-12 col-sm-6 col-md-4">
+        <label class="card h-100 p-3 border cursor-pointer domain-card" data-domain="{{ domain.name }}">
+          <input type="checkbox" name="domains" value="{{ domain.name }}" class="d-none domain-input">
+          <div class="d-flex justify-content-between align-items-start">
+            <div class="icon text-brand"><i class="bi {{ domain.icon }} fs-3"></i></div>
+            <div class="checkmark text-success d-none"><i class="bi bi-check-circle-fill"></i></div>
+          </div>
+          <h5 class="fw-semibold mb-1">{{ domain.name }}</h5>
+          <p class="text-muted small mb-0">Focused knowledge, frameworks, and patterns for {{ domain.name }}.</p>
+        </label>
+      </div>
+    {% endfor %}
+  </div>
+  <div class="mt-4 d-flex align-items-center gap-3">
+    <button type="submit" class="btn btn-brand" id="continueBtn" disabled>Continue →</button>
+    <a href="{{ url_for('onboarding.skip') }}" class="text-muted">Skip for now →</a>
+  </div>
+</form>
+{% endblock %}
+{% block scripts %}
+<script>
+  const domainCards = document.querySelectorAll('.domain-card');
+  const continueBtn = document.getElementById('continueBtn');
+  const warning = document.getElementById('domainWarning');
+  function updateState() {
+    const selected = document.querySelectorAll('.domain-input:checked');
+    continueBtn.disabled = selected.length === 0;
+  }
+  domainCards.forEach((card) => {
+    card.addEventListener('click', (e) => {
+      const input = card.querySelector('.domain-input');
+      const currentlyChecked = input.checked;
+      if (!currentlyChecked) {
+        const selected = document.querySelectorAll('.domain-input:checked');
+        if (selected.length >= 5) {
+          warning.classList.remove('d-none');
+          e.preventDefault();
+          return;
+        }
+      }
+      input.checked = !currentlyChecked;
+      card.querySelector('.checkmark').classList.toggle('d-none', !input.checked);
+      card.classList.toggle('border-success', input.checked);
+      card.classList.toggle('bg-light', input.checked);
+      updateState();
+    });
+  });
+  updateState();
+</script>
+{% endblock %}

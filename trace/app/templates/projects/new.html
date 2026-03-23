@@ -1,0 +1,90 @@
+{% extends 'dashboard_base.html' %}
+{% block title %}New Project{% endblock %}
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb" class="mb-3">
+  <ol class="breadcrumb mb-0">
+    <li class="breadcrumb-item"><a href="{{ url_for('dashboard_bp.dashboard') }}">Dashboard</a></li>
+    <li class="breadcrumb-item"><a href="{{ url_for('projects_bp.index') }}">Projects</a></li>
+    <li class="breadcrumb-item active" aria-current="page">New Project</li>
+  </ol>
+</nav>
+{% endblock %}
+{% block dashboard_content %}
+<div class="row g-4">
+  <div class="col-lg-7">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h4 class="mb-3">Create a project</h4>
+        <form method="POST">
+          {{ form.hidden_tag() }}
+          <div class="mb-3">{{ form.name.label(class="form-label") }} {{ form.name(class="form-control") }}</div>
+          <div class="mb-3">{{ form.description.label(class="form-label") }} {{ form.description(class="form-control", rows=4) }}</div>
+          <div class="mb-3">
+            <label class="form-label">{{ form.domain_tags.label.text }}</label>
+            <div class="d-flex flex-wrap gap-2 mb-2" id="domain-pill-list">
+              {% for value, label in form.domain_tags.choices %}
+              <button type="button" class="btn btn-outline-primary btn-sm domain-pill" data-value="{{ value }}">{{ label }}</button>
+              {% endfor %}
+            </div>
+            {{ form.domain_tags(class="form-select d-none", multiple=true) }}
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Reminder Frequency</label>
+            <div class="d-flex gap-2 flex-wrap">
+              {% for value, label in form.reminder_frequency.choices %}
+              <label class="btn btn-outline-secondary btn-sm">
+                <input type="radio" name="{{ form.reminder_frequency.name }}" value="{{ value }}" {% if form.reminder_frequency.data == value %}checked{% endif %}> {{ label }}
+              </label>
+              {% endfor %}
+            </div>
+          </div>
+          <div class="form-check form-switch mb-3">
+            {{ form.is_active(class="form-check-input", id="is_active") }}
+            <label class="form-check-label" for="is_active">Enable application reminders for this project</label>
+          </div>
+          {{ form.submit(class="btn btn-primary") }}
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-5">
+    <div class="card h-100 shadow-sm">
+      <div class="card-body">
+        <h5>Concepts that would match this project</h5>
+        <p class="text-muted small">Based on the domains you select.</p>
+        <div id="preview-count" class="h3 mb-3">0 concepts</div>
+        <ul id="preview-samples" class="list-unstyled small text-muted mb-0"></ul>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+{{ super() }}
+<script>
+  const domainPills = document.querySelectorAll('.domain-pill');
+  const domainSelect = document.querySelector('select[name="{{ form.domain_tags.name }}"]');
+  const previewCount = document.getElementById('preview-count');
+  const previewSamples = document.getElementById('preview-samples');
+
+  function syncDomains() {
+    const selected = Array.from(domainPills).filter(p => p.classList.contains('active')).map(p => p.dataset.value);
+    Array.from(domainSelect.options).forEach(opt => opt.selected = selected.includes(opt.value));
+    fetch(`/projects/preview-matches?domains=${selected.join(',')}`)
+      .then(res => res.json())
+      .then(data => {
+        previewCount.textContent = `${data.count} concepts`;
+        previewSamples.innerHTML = data.samples.map(s => `<li>• ${s}</li>`).join('');
+      });
+  }
+
+  domainPills.forEach(pill => {
+    pill.addEventListener('click', () => {
+      pill.classList.toggle('active');
+      syncDomains();
+    });
+  });
+
+  syncDomains();
+</script>
+{% endblock %}

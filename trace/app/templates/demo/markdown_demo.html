@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% set use_markdown = True %}
+{% block title %}Markdown Demo{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <div class="row g-4">
+    <div class="col-lg-8">
+      <h1 class="mb-4">Markdown Rendering Demo</h1>
+
+      <section class="mb-5">
+        <h2 class="h4 mb-3">Method 1: Using the | markdown filter</h2>
+        <div class="markdown-content" data-markdown-rendered="true">
+          {{ content | markdown }}
+        </div>
+      </section>
+
+      <section class="mb-5">
+        <h2 class="h4 mb-3">Method 2: Using the markdown_block component</h2>
+        {% include 'components/markdown_block.html' with
+           content=content
+           show_toc=True
+           toc_title="On This Page"
+           css_class="demo-markdown"
+        %}
+      </section>
+
+      <section class="mb-5">
+        <h2 class="h4 mb-3">Method 3: Using render_markdown global</h2>
+        <div class="markdown-content" data-markdown-rendered="true">
+          {{ render_markdown("**Hello!** This is *inline* markdown.") | safe }}
+        </div>
+      </section>
+
+      <section class="mb-5">
+        <h2 class="h4 mb-3">Method 4: Auto-detection with is_markdown</h2>
+        {% if some_variable | is_markdown %}
+          <div class="markdown-content" data-markdown-rendered="true">{{ some_variable | markdown }}</div>
+        {% else %}
+          <p>{{ some_variable }}</p>
+        {% endif %}
+      </section>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="card shadow-sm h-100">
+        <div class="card-body">
+          <h3 class="h5">Raw Markdown Source</h3>
+          <p class="text-muted small">Use this to verify before/after rendering.</p>
+          <pre class="bg-dark text-light p-3 rounded-3 small" style="white-space: pre-wrap; max-height: 70vh; overflow-y: auto;">{{ content | e }}</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{#
+Usage quick reference:
+A. {% set use_markdown = True %}<div class="markdown-content">{{ blog_post.content | markdown }}</div>
+B. {% set use_markdown = True %}<div class="markdown-content">{{ user_comment.body | markdown_safe }}</div>
+C. {% set use_markdown = True %}{% include 'components/markdown_block.html' with content=article.body show_toc=True toc_title='Jump to section' %}
+D. {% set use_markdown = True %}{% if note.content | is_markdown %}<div class="markdown-content">{{ note.content | markdown }}</div>{% else %}<p>{{ note.content }}</p>{% endif %}
+E. @main_bp.route('/blog/<slug>') def blog_post(slug): return render_template('blog/post.html', post=post, use_markdown=True)
+#}
+{% endblock %}

@@ -1,0 +1,16 @@
+.auth-card {
+  border-radius: 14px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+}
+
+.auth-logo {
+  font-weight: 800;
+  color: #1B4F72;
+  font-size: 20px;
+}
+
+.auth-footer-links {
+  font-size: 13px;
+  color: #6b7280;
+}

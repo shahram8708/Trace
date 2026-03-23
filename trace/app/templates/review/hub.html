@@ -1,0 +1,159 @@
+{% extends 'dashboard_base.html' %}
+{% block title %}Review Hub{% endblock %}
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb" class="mb-3">
+  <ol class="breadcrumb mb-0">
+    <li class="breadcrumb-item"><a href="{{ url_for('dashboard_bp.dashboard') }}">Dashboard</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Review</li>
+  </ol>
+</nav>
+{% endblock %}
+{% block dashboard_content %}
+<div class="d-flex flex-column gap-4">
+  {% if streak_info.current_streak > 0 %}
+  <div class="alert alert-warning shadow-sm mb-0">
+    <div class="d-flex align-items-center">
+      <div class="fs-3 me-3">🔥</div>
+      <div>
+        <div class="fw-bold">{{ streak_info.current_streak }} day streak — keep it going!</div>
+        <div class="text-muted">{{ streak_info.streak_message }}</div>
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <div class="alert alert-info shadow-sm mb-0">
+    <div class="fw-bold">Start your streak today.</div>
+    <div class="text-muted">Complete a quick session to light the flame.</div>
+  </div>
+  {% endif %}
+
+  <div class="card border-0 shadow-sm p-4">
+    {% if queue_count > 0 %}
+      <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+        <div>
+          <div class="text-muted">Today's Review</div>
+          <h2 class="fw-bold mb-1">You have {{ queue_count }} concepts ready for review</h2>
+          <div class="text-muted">Estimated time: approximately {{ (queue_count * 1.5)|round(0,'ceil') }} minutes</div>
+        </div>
+        <div class="d-flex flex-column align-items-md-end gap-2">
+          <a class="btn btn-primary btn-lg px-4" href="{{ url_for('review_bp.session') }}">Start Review Session →</a>
+          {% if overdue_count > 0 %}
+            <div class="d-flex flex-wrap justify-content-md-end gap-2 align-items-center">
+              <a class="btn btn-outline-danger btn-sm" href="{{ url_for('review_bp.overdue') }}">View overdue ({{ overdue_count }})</a>
+              <div class="small text-danger">includes {{ overdue_count }} overdue</div>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    {% elif reviewed_today_count > 0 %}
+      <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+        <div>
+          <h2 class="fw-bold text-success mb-1">You're all caught up for today! ✓</h2>
+          <div class="text-muted">Reviewed {{ reviewed_today_count }} concepts today.</div>
+        </div>
+        <div>
+          <a class="btn btn-outline-primary" href="{{ url_for('import_bp.hub') }}">Import new content</a>
+        </div>
+      </div>
+    {% else %}
+      <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+        <div>
+          <h2 class="fw-bold mb-1">Your review queue is empty</h2>
+          <div class="text-muted">Add content or check back tomorrow.</div>
+        </div>
+        <div>
+          <a class="btn btn-primary" href="{{ url_for('import_bp.hub') }}">Import content →</a>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+
+  <div class="row g-3">
+    <div class="col-6 col-lg-3">
+      <div class="card shadow-sm border-0 p-3 h-100">
+        <div class="text-muted">Total Concepts</div>
+        <div class="fw-bold fs-3">{{ total_concepts }}</div>
+        <div class="small text-muted">Active in your library</div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="card shadow-sm border-0 p-3 h-100">
+        <div class="text-muted">Mature Concepts</div>
+        <div class="fw-bold fs-3">{{ mature_concepts }}</div>
+        <div class="small text-muted">Reviewed enough to retain</div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="card shadow-sm border-0 p-3 h-100">
+        <div class="text-muted">Domains Covered</div>
+        <div class="fw-bold fs-3">{{ domain_count }}</div>
+        <div class="small text-muted">Knowledge areas</div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="card shadow-sm border-0 p-3 h-100">
+        <div class="text-muted">Longest Streak</div>
+        <div class="fw-bold fs-3">{{ streak_info.longest_streak }}</div>
+        <div class="small text-muted">Best run so far</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card shadow-sm border-0 p-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h5 class="mb-0">Knowledge Health by Domain</h5>
+      <a class="small" href="{{ url_for('concepts_bp.library') }}">View concepts →</a>
+    </div>
+    {% if domain_summary %}
+      <div class="d-flex flex-column gap-3">
+        {% for domain in domain_summary %}
+          {% set pct = (domain.avg_retention or 0) * 100 %}
+          {% set color = pct >= 80 and 'bg-success' or (pct >= 50 and 'bg-warning' or 'bg-danger') %}
+          <div>
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <div class="fw-semibold">{{ domain.domain }}</div>
+              <div class="small text-muted">{{ domain.concept_count }} concepts</div>
+            </div>
+            <div class="progress" style="height:10px;">
+              <div class="progress-bar {{ color }}" role="progressbar" style="width: {{ pct|round(0) }}%" aria-valuenow="{{ pct|round(0) }}" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="text-muted">No domains yet. Import content to build your knowledge map.</div>
+    {% endif %}
+  </div>
+
+  {% if overdue_count > 0 %}
+  <div class="alert alert-danger shadow-sm d-flex justify-content-between align-items-center">
+    <div>You have {{ overdue_count }} overdue concepts. These will appear at the front of your next review session.</div>
+    <a class="text-danger fw-bold" href="{{ url_for('review_bp.overdue') }}">See overdue concepts →</a>
+  </div>
+  {% endif %}
+
+  <div class="card shadow-sm border-0 p-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h5 class="mb-0">Recent Activity (last 7 days)</h5>
+      <a class="small" href="{{ url_for('review_bp.history') }}">View history →</a>
+    </div>
+    {% if recent_activity %}
+      <table class="table align-middle mb-0">
+        <thead>
+          <tr><th>Date</th><th class="text-end">Concepts reviewed</th></tr>
+        </thead>
+        <tbody>
+          {% for day, count in recent_activity.items() %}
+          <tr>
+            <td>{{ day }}</td>
+            <td class="text-end">{{ count }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <div class="d-flex align-items-center text-muted"><i class="bi bi-hourglass-split me-2"></i>No activity yet. Start a session to populate this.</div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

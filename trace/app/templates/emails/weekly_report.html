@@ -1,0 +1,32 @@
+<!doctype html>
+<html>
+<body style="font-family: Arial, sans-serif; background:#f6f9fc; padding:24px;">
+  <div style="max-width:600px; margin:0 auto; background:#fff; border:1px solid #e5e7eb; border-radius:10px; padding:24px;">
+    <h2 style="margin-top:0; color:#111827;">Your Weekly Trace Report</h2>
+    <p style="color:#4b5563;">{{ date_range }}</p>
+    <div style="display:flex; gap:12px; flex-wrap:wrap; margin:18px 0;">
+      <div style="flex:1; min-width:180px; border:1px solid #e5e7eb; border-radius:10px; padding:12px;">
+        <div style="color:#6b7280; font-size:13px;">Reviews</div>
+        <div style="font-size:22px; font-weight:700;">{{ report_data['reviews_this_week'] }}</div>
+      </div>
+      <div style="flex:1; min-width:180px; border:1px solid #e5e7eb; border-radius:10px; padding:12px;">
+        <div style="color:#6b7280; font-size:13px;">Current streak</div>
+        <div style="font-size:22px; font-weight:700;">{{ report_data['current_streak'] }} days</div>
+      </div>
+      <div style="flex:1; min-width:180px; border:1px solid #e5e7eb; border-radius:10px; padding:12px;">
+        <div style="color:#6b7280; font-size:13px;">Overdue</div>
+        <div style="font-size:22px; font-weight:700;">{{ report_data['overdue_concepts']|length }}</div>
+      </div>
+    </div>
+    {% if report_data['concept_of_week'] %}
+    <div style="border:1px solid #e5e7eb; border-radius:10px; padding:14px; margin-bottom:16px;">
+      <div style="color:#6b7280; font-size:13px;">Concept of the Week</div>
+      <div style="font-weight:700;">{{ report_data['concept_of_week'].name }}</div>
+    </div>
+    {% endif %}
+    <p style="color:#4b5563;">New concepts: {{ report_data['new_concepts']|length }} • Mature concepts: {{ report_data['mature_concepts'] }}</p>
+    <p style="text-align:center; margin:26px 0;"><a href="{{ base_url }}/reports" style="background:#2563eb; color:#fff; padding:12px 18px; border-radius:8px; text-decoration:none;">Open full report</a></p>
+  </div>
+  <p style="color:#9ca3af; font-size:12px; text-align:center; margin-top:12px;">Sent by Trace • {{ base_url }}</p>
+</body>
+</html>

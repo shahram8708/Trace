@@ -1,0 +1,53 @@
+{% extends 'dashboard_base.html' %}
+{% block title %}Onboarding - Learning Formats{% endblock %}
+{% block head_extra %}<link rel="stylesheet" href="{{ url_for('static', filename='css/import.css') }}">{% endblock %}
+{% block dashboard_content %}
+<div class="review-sticky-header mb-3">
+  <div class="d-flex align-items-center gap-3">
+    <div class="d-flex align-items-center gap-2 text-muted"><div class="step-number">1</div><span>Your Domains</span></div>
+    <div class="flex-grow-1 border-top" style="height:1px;"></div>
+    <div class="d-flex align-items-center gap-2"><div class="step-number bg-brand text-muted border-0">2</div><span>How You Learn</span></div>
+    <div class="flex-grow-1 border-top" style="height:1px;"></div>
+    <div class="d-flex align-items-center gap-2 text-muted"><div class="step-number">3</div><span>Your Schedule</span></div>
+  </div>
+</div>
+
+<h2 class="fw-bold">How do you currently learn?</h2>
+<p class="text-muted">Select all that apply. We'll optimize your import experience for these formats.</p>
+<form method="POST" action="{{ url_for('onboarding.step2') }}">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div class="row g-3">
+    {% for ct in content_types %}
+      <div class="col-12 col-md-6">
+        <label class="card h-100 p-3 border content-type-card" data-type="{{ ct.name }}">
+          <input type="checkbox" name="content_types" value="{{ ct.name }}" class="d-none content-type-input">
+          <div class="d-flex align-items-start gap-2">
+            <div class="icon text-brand"><i class="bi {{ ct.icon }} fs-3"></i></div>
+            <div>
+              <h5 class="fw-semibold mb-1">{{ ct.name }}</h5>
+              <p class="text-muted small mb-0">{{ ct.description }}</p>
+            </div>
+          </div>
+        </label>
+      </div>
+    {% endfor %}
+  </div>
+  <div class="mt-4 d-flex align-items-center gap-3">
+    <a href="{{ url_for('onboarding.step1') }}" class="text-muted">← Back</a>
+    <button type="submit" class="btn btn-brand">Continue →</button>
+    <a href="{{ url_for('onboarding.skip') }}" class="text-muted">Skip for now →</a>
+  </div>
+</form>
+{% endblock %}
+{% block scripts %}
+<script>
+  document.querySelectorAll('.content-type-card').forEach((card) => {
+    card.addEventListener('click', (e) => {
+      const input = card.querySelector('.content-type-input');
+      input.checked = !input.checked;
+      card.classList.toggle('border-success', input.checked);
+      card.classList.toggle('bg-light', input.checked);
+    });
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,86 @@
+{% extends 'dashboard_base.html' %}
+{% block title %}Admin Panel{% endblock %}
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb" class="mb-3">
+  <ol class="breadcrumb mb-0">
+    <li class="breadcrumb-item"><a href="{{ url_for('dashboard_bp.dashboard') }}">Dashboard</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Admin</li>
+  </ol>
+</nav>
+{% endblock %}
+{% block dashboard_content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div>
+    <h2 class="mb-0">Admin Overview</h2>
+    <div class="text-muted">System health, growth, and queues.</div>
+  </div>
+  <div class="d-flex align-items-center gap-2">
+    <a class="btn btn-sm btn-primary" href="{{ url_for('admin_bp.content') }}">Content</a>
+    <span class="badge bg-dark">Queue size: {{ queue_size }}</span>
+  </div>
+</div>
+
+<div class="row g-3 mb-3">
+  <div class="col-md-3"><div class="stat-card"><div class="text-muted small">Users</div><div class="h4 mb-0">{{ total_users }}</div></div></div>
+  <div class="col-md-3"><div class="stat-card"><div class="text-muted small">Verified</div><div class="h4 mb-0">{{ verified_users }}</div></div></div>
+  <div class="col-md-3"><div class="stat-card"><div class="text-muted small">Premium</div><div class="h4 mb-0">{{ premium_users }}</div></div></div>
+  <div class="col-md-3"><div class="stat-card"><div class="text-muted small">MRR (₹)</div><div class="h4 mb-0">{{ mrr }}</div></div></div>
+</div>
+<div class="row g-3 mb-3">
+  <div class="col-md-4"><div class="stat-card"><div class="text-muted small">Concepts</div><div class="h4 mb-0">{{ total_concepts }}</div></div></div>
+  <div class="col-md-4"><div class="stat-card"><div class="text-muted small">Reviews</div><div class="h4 mb-0">{{ total_reviews }}</div><div class="text-muted small">Last 7d: {{ recent_reviews }}</div></div></div>
+  <div class="col-md-4"><div class="stat-card"><div class="text-muted small">Subscription mix</div><div class="h6 mb-0">Monthly: {{ monthly }} · Annual: {{ annual }}</div></div></div>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-6">
+    <div class="settings-card p-3 h-100">
+      <div class="d-flex justify-content-between align-items-center mb-2"><h6 class="mb-0">New signups (7d)</h6><span class="badge badge-soft">{{ new_signups|length }}</span></div>
+      <div class="table-responsive">
+        <table class="table table-sm align-middle admin-table mb-0">
+          <thead><tr><th>Email</th><th>Created</th><th>Verified</th></tr></thead>
+          <tbody>
+            {% for u in new_signups %}
+            <tr>
+              <td><a href="{{ url_for('admin_bp.user_detail', user_id=u.id) }}">{{ u.email }}</a></td>
+              <td>{{ u.created_at.strftime('%b %d %H:%M') }}</td>
+              <td>{% if u.is_verified %}<span class="text-success">Yes</span>{% else %}<span class="text-danger">No</span>{% endif %}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="3" class="text-muted">No recent signups.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="settings-card p-3 h-100">
+      <div class="d-flex justify-content-between align-items-center mb-2"><h6 class="mb-0">Failed extractions (7d)</h6><span class="badge badge-soft">{{ failed_extractions|length }}</span></div>
+      <div class="table-responsive">
+        <table class="table table-sm align-middle admin-table mb-0">
+          <thead><tr><th>Source</th><th>User</th><th>Created</th></tr></thead>
+          <tbody>
+            {% for item in failed_extractions %}
+            <tr>
+              <td>{{ item.source_item.title if item.source_item else 'Source' }}<div class="small text-muted">{{ item.error_message or 'Error' }}</div></td>
+              {% set user_id = item.source_item.user_id if item.source_item else None %}
+              <td>
+                {% if user_id %}
+                  <a href="{{ url_for('admin_bp.user_detail', user_id=user_id) }}">User {{ user_id }}</a>
+                {% else %}
+                  <span class="text-muted">Unknown user</span>
+                {% endif %}
+              </td>
+              <td>{{ item.created_at.strftime('%b %d %H:%M') }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="3" class="text-muted">No failures this week.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

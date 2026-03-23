@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block title %}Server Error{% endblock %}
+{% block content %}
+<div class="container py-5" style="min-height: 70vh;">
+  <div class="row justify-content-center text-center">
+    <div class="col-lg-6">
+      <div class="display-1 fw-bold text-gradient">500</div>
+      <h1 class="h3 fw-bold">Something went wrong</h1>
+      <p class="text-muted">We're experiencing a technical issue. Our team has been notified and we're working on it.</p>
+      <div class="d-flex justify-content-center gap-2">
+        <a class="btn btn-brand" href="{{ url_for('main.index') }}">Go to Homepage</a>
+        <button class="btn btn-outline-primary" onclick="window.location.reload()">Try again</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

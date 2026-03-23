@@ -1,0 +1,171 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+{% set endpoint = request.endpoint or '' %}
+
+{% macro sidebar_links() %}
+  {% if current_user.is_admin %}
+  <a class="sidebar-nav-item text-warning {% if request.blueprint == 'admin_bp' %}active{% endif %}" href="{{ url_for('admin_bp.panel') }}">
+    <i class="bi bi-shield-lock-fill me-2"></i> Admin Panel
+  </a>
+  {% endif %}
+
+  <a class="sidebar-nav-item {% if endpoint == 'dashboard_bp.dashboard' %}active{% endif %}" href="{{ url_for('dashboard_bp.dashboard') }}">
+    <i class="bi bi-grid-1x2-fill me-2"></i> Dashboard
+  </a>
+
+  <a class="sidebar-nav-item {% if endpoint == 'dashboard_bp.dashboard_snapshot' %}active{% endif %}" href="{{ url_for('dashboard_bp.dashboard_snapshot') }}">
+    <i class="bi bi-speedometer2 me-2"></i> Snapshot
+  </a>
+
+  {% set imports_remaining = nav_limits.imports_remaining if nav_limits and nav_limits.imports_remaining is not none else '∞' %}
+  {% set import_badge_class = 'bg-secondary' %}
+  {% if imports_remaining != '∞' and imports_remaining == 0 %}
+    {% set import_badge_class = 'bg-danger' %}
+  {% endif %}
+  <a class="sidebar-nav-item d-flex align-items-center {% if request.blueprint == 'import_bp' %}active{% endif %}" href="{{ url_for('import_bp.hub') }}">
+    <i class="bi bi-cloud-upload-fill me-2"></i> Import
+    {% if current_user.is_premium %}
+      <span class="badge bg-secondary ms-auto">∞</span>
+    {% else %}
+      <span class="badge {{ import_badge_class }} ms-auto">{{ imports_remaining }}</span>
+    {% endif %}
+  </a>
+
+  <a class="sidebar-nav-item d-flex align-items-center {% if request.blueprint == 'review_bp' %}active{% endif %}" href="{{ url_for('review_bp.hub') }}">
+    <i class="bi bi-arrow-repeat me-2"></i> Review Queue
+    {% if nav_due_count and nav_due_count > 0 %}
+      <span class="badge bg-danger ms-auto">{{ nav_due_count }}</span>
+    {% endif %}
+  </a>
+
+  <a class="sidebar-nav-item d-flex align-items-center {% if request.blueprint == 'concepts_bp' %}active{% endif %}" href="{{ url_for('concepts_bp.library') }}">
+    <i class="bi bi-book-fill me-2"></i> My Concepts
+  </a>
+
+  <a class="sidebar-nav-item d-flex align-items-center {% if request.blueprint == 'library_bp' %}active{% endif %}" href="{{ url_for('library_bp.index') }}">
+    <i class="bi bi-archive-fill me-2"></i> My Library
+  </a>
+
+  {% if current_user.is_premium %}
+    <a class="sidebar-nav-item d-flex align-items-center {% if request.blueprint == 'map_bp' %}active{% endif %}" href="{{ url_for('map_bp.map_view') }}">
+      <i class="bi bi-diagram-3-fill me-2"></i> Knowledge Map
+    </a>
+    <a class="sidebar-nav-item d-flex align-items-center {% if request.blueprint == 'projects_bp' %}active{% endif %}" href="{{ url_for('projects_bp.index') }}">
+      <i class="bi bi-briefcase-fill me-2"></i> Projects
+      {% if pending_application_prompts_count %}
+        <span class="badge bg-warning text-dark ms-auto">{{ pending_application_prompts_count }}</span>
+      {% endif %}
+    </a>
+    <a class="sidebar-nav-item d-flex align-items-center {% if request.blueprint == 'reports_bp' %}active{% endif %}" href="{{ url_for('reports_bp.index') }}">
+      <i class="bi bi-bar-chart-line-fill me-2"></i> Weekly Report
+    </a>
+  {% else %}
+    <a class="sidebar-nav-item d-flex align-items-center {% if request.blueprint == 'map_bp' %}active{% endif %}" href="{{ url_for('main.pricing') }}">
+      <i class="bi bi-diagram-3-fill me-2"></i> Knowledge Map <span class="ms-auto text-warning">🔒 Pro</span>
+    </a>
+    <a class="sidebar-nav-item d-flex align-items-center {% if request.blueprint == 'projects_bp' %}active{% endif %}" href="{{ url_for('main.pricing') }}">
+      <i class="bi bi-briefcase-fill me-2"></i> Projects <span class="ms-auto text-warning">🔒 Pro</span>
+    </a>
+    <a class="sidebar-nav-item d-flex align-items-center {% if request.blueprint == 'reports_bp' %}active{% endif %}" href="{{ url_for('main.pricing') }}">
+      <i class="bi bi-bar-chart-line-fill me-2"></i> Weekly Report <span class="ms-auto text-warning">🔒 Pro</span>
+    </a>
+  {% endif %}
+
+  <hr class="border-secondary my-3">
+
+  <a class="sidebar-nav-item {% if request.blueprint == 'profile_bp' %}active{% endif %}" href="{{ url_for('profile_bp.settings_account') }}">
+    <i class="bi bi-gear-fill me-2"></i> Settings
+  </a>
+
+  <div class="mt-auto pt-3 sidebar-user d-flex align-items-center">
+    <a class="d-flex align-items-center text-decoration-none text-white flex-grow-1" href="{{ url_for('profile_bp.profile') }}">
+      <div class="avatar-circle me-3">{{ (current_user.get_display_name() if current_user.is_authenticated else 'T')[0]|upper }}</div>
+      <div class="flex-grow-1">
+        <div class="text-white fw-semibold">{{ current_user.get_display_name() if current_user.is_authenticated else 'Trace User' }}</div>
+        <div class="small text-white">{{ current_user.subscription_tier|capitalize if current_user.is_authenticated else 'Free' }}</div>
+        <div class="small text-warning">🔥 {{ current_user.current_streak_days if current_user.is_authenticated else 0 }} day streak</div>
+      </div>
+    </a>
+    <a class="btn btn-sm btn-outline-light ms-2" href="{{ url_for('review_bp.hub') }}">Review</a>
+  </div>
+
+  {% if current_user.is_premium and pending_application_prompts_count %}
+    <div class="mt-2 small text-warning"><a class="text-warning text-decoration-none" href="{{ url_for('projects_bp.index') }}">💡 {{ pending_application_prompts_count }} pending prompts</a></div>
+  {% endif %}
+
+  <a class="sidebar-nav-item mt-3" href="{{ url_for('auth.logout') }}"><i class="bi bi-box-arrow-right me-2"></i> Log Out</a>
+{% endmacro %}
+
+<div class="dashboard-shell d-flex">
+  <nav class="sidebar d-none d-lg-flex flex-column p-3">
+    <div class="d-flex align-items-center mb-4">
+      <a class="fs-4 fw-bold text-white text-decoration-none" href="{{ url_for('dashboard_bp.dashboard') }}">Trace</a>
+    </div>
+    {{ sidebar_links() }}
+  </nav>
+
+  <div class="flex-grow-1 position-relative">
+    <header class="dashboard-topbar d-lg-none">
+      <div class="d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center gap-2">
+          <button class="btn btn-outline-light shadow-sm" id="mobileMenuToggle" aria-label="Open menu"><i class="bi bi-list"></i></button>
+          <a class="fw-bold text-white text-decoration-none" href="{{ url_for('dashboard_bp.dashboard') }}">Trace</a>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <a class="btn btn-primary btn-sm" href="{{ url_for('review_bp.hub') }}">Review</a>
+          <a class="avatar-chip text-decoration-none" href="{{ url_for('profile_bp.profile') }}">
+            <span>{{ (current_user.get_display_name() if current_user.is_authenticated else 'T')[0]|upper }}</span>
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <div class="container py-5">
+      {% block breadcrumbs %}{% endblock %}
+      {% block dashboard_content %}{% endblock %}
+    </div>
+  </div>
+</div>
+
+<div class="mobile-sidebar-overlay" id="mobileSidebarOverlay"></div>
+<nav class="mobile-sidebar" id="mobileSidebar" aria-hidden="true">
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <div class="d-flex align-items-center gap-2">
+      <span class="mobile-sidebar-dot"></span>
+      <span class="fw-bold">Trace</span>
+    </div>
+    <button class="btn btn-outline-secondary" id="mobileSidebarClose" aria-label="Close menu"><i class="bi bi-x-lg"></i></button>
+  </div>
+  {{ sidebar_links() }}
+</nav>
+
+<script>
+  (function() {
+    const overlay = document.getElementById('mobileSidebarOverlay');
+    const panel = document.getElementById('mobileSidebar');
+    const openBtn = document.getElementById('mobileMenuToggle');
+    const closeBtn = document.getElementById('mobileSidebarClose');
+
+    if (!overlay || !panel || !openBtn || !closeBtn) return;
+
+    const open = () => {
+      panel.classList.add('open');
+      overlay.classList.add('visible');
+      panel.setAttribute('aria-hidden', 'false');
+      document.body.classList.add('no-scroll');
+    };
+
+    const close = () => {
+      panel.classList.remove('open');
+      overlay.classList.remove('visible');
+      panel.setAttribute('aria-hidden', 'true');
+      document.body.classList.remove('no-scroll');
+    };
+
+    openBtn.addEventListener('click', open);
+    closeBtn.addEventListener('click', close);
+    overlay.addEventListener('click', close);
+  })();
+</script>
+{% endblock %}

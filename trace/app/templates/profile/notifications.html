@@ -1,0 +1,69 @@
+{% extends 'dashboard_base.html' %}
+{% import 'macros/forms.html' as forms %}
+{% block title %}Notifications{% endblock %}
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb" class="mb-3">
+  <ol class="breadcrumb mb-0">
+    <li class="breadcrumb-item"><a href="{{ url_for('dashboard_bp.dashboard') }}">Dashboard</a></li>
+    <li class="breadcrumb-item"><a href="{{ url_for('profile_bp.settings_account') }}">Settings</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Notifications</li>
+  </ol>
+</nav>
+{% endblock %}
+{% block dashboard_content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div>
+    <h2 class="mb-0">Notifications</h2>
+    <div class="text-muted">Choose how Trace keeps you on track.</div>
+  </div>
+</div>
+
+<ul class="nav settings-nav mb-4 flex-wrap">
+  <li class="nav-item"><a class="nav-link" href="{{ url_for('profile_bp.settings_account') }}">Account</a></li>
+  <li class="nav-item"><a class="nav-link" href="{{ url_for('profile_bp.billing') }}">Billing</a></li>
+  <li class="nav-item"><a class="nav-link active" href="#">Notifications</a></li>
+  <li class="nav-item"><a class="nav-link" href="{{ url_for('profile_bp.integrations') }}">Integrations</a></li>
+  <li class="nav-item"><a class="nav-link" href="{{ url_for('profile_bp.delete_account') }}">Delete</a></li>
+</ul>
+
+<div class="row g-3">
+  <div class="col-lg-7">
+    <div class="settings-card p-4">
+      <h5 class="mb-3">Email preferences</h5>
+      <form method="POST" action="{{ url_for('profile_bp.notifications') }}">
+        {{ form.hidden_tag() }}
+        <div class="form-check form-switch mb-3">
+          {{ form.review_reminder_enabled(class_='form-check-input') }}
+          <label class="form-check-label" for="{{ form.review_reminder_enabled.id }}">Daily review reminders</label>
+          <div class="form-text">We'll email you when cards are due.</div>
+        </div>
+        <div class="mb-3">
+          {{ form.review_reminder_time.label(class_='form-label') }}
+          {{ form.review_reminder_time(class_='form-select') }}
+        </div>
+        <div class="form-check form-switch mb-3">
+          {{ form.weekly_report_enabled(class_='form-check-input') }}
+          <label class="form-check-label" for="{{ form.weekly_report_enabled.id }}">Weekly knowledge report</label>
+          <div class="form-text">A digest of your progress every Monday.</div>
+        </div>
+        <div class="form-check form-switch mb-4">
+          {{ form.application_reminders_enabled(class_='form-check-input') }}
+          <label class="form-check-label" for="{{ form.application_reminders_enabled.id }}">Application reminders</label>
+          <div class="form-text">Prompt to apply key concepts in your projects.</div>
+        </div>
+        <button class="btn btn-primary" type="submit">{{ form.submit.label.text }}</button>
+      </form>
+    </div>
+  </div>
+  <div class="col-lg-5">
+    <div class="settings-card p-4">
+      <h6 class="mb-2">Delivery details</h6>
+      <ul class="list-unstyled small text-muted mb-0">
+        <li class="mb-2">• Reminders respect your local timezone.</li>
+        <li class="mb-2">• You can unsubscribe via the footer in any email.</li>
+        <li class="mb-2">• We only send operational updates—no spam.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+{% endblock %}

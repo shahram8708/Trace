@@ -1,0 +1,116 @@
+{% extends 'dashboard_base.html' %}
+{% block title %}Review Concepts{% endblock %}
+{% block head_extra %}<link rel="stylesheet" href="{{ url_for('static', filename='css/import.css') }}">{% endblock %}
+{% block dashboard_content %}
+<div class="review-sticky-header mb-3">
+  <div class="d-flex justify-content-between align-items-center">
+    <div>
+      <div class="text-muted small">Source</div>
+      <h4 class="mb-0">{{ source_item.title or 'Untitled' }}</h4>
+      <div class="small text-muted">{{ source_item.source_type|capitalize }} • {{ source_item.word_count }} words</div>
+    </div>
+    <div class="text-end">
+      <div id="conceptCounter" class="small text-muted">0 confirmed / 0 rejected / 0 pending</div>
+      <button class="btn btn-brand mt-1" id="conceptSubmitBtn" onclick="submitConceptsForm(event)" disabled>Add concepts to my library</button>
+      <div class="small text-muted">Your first review will be scheduled for tomorrow.</div>
+    </div>
+  </div>
+</div>
+
+{% if status == 'failed' %}
+  <div class="alert alert-warning">AI extraction failed — you can add concepts manually below.</div>
+{% endif %}
+<div class="review-layout">
+  <div class="source-preview-panel" id="sourcePanel">
+    <div class="d-flex align-items-center justify-content-between mb-2">
+      <div class="fw-semibold">Source Content</div>
+      <span class="badge bg-secondary text-dark">{{ source_item.source_type|capitalize }}</span>
+    </div>
+    <div id="sourceContent" class="source-text">{{ (source_item.full_text or '')[:5000] }}</div>
+    {% if source_item.full_text and source_item.full_text|length > 5000 %}
+      <button class="btn btn-link p-0 mt-2" id="showFull">Show full content</button>
+      <div id="fullContent" class="d-none source-text">{{ source_item.full_text }}</div>
+    {% endif %}
+    <div class="text-muted fst-italic small mt-3">This is the original source content. Concepts were extracted from this text by Gemini AI.</div>
+  </div>
+  <div class="concept-cards-panel">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+      <div>
+        <h5 class="mb-0">Extracted Concepts</h5>
+        <small class="text-muted">Review, edit, confirm, or reject each concept.</small>
+      </div>
+      <button class="btn btn-outline-secondary btn-sm" type="button" onclick="addCustomConcept()">+ Add a concept I noticed</button>
+    </div>
+    <form method="POST" action="{{ url_for('import_bp.confirm', item_id=source_item.id) }}" id="conceptForm">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="concepts_payload" id="conceptsPayload">
+      <div id="conceptCards">
+        {% if concepts %}
+          {% for concept in concepts %}
+            <div class="concept-card" data-index="{{ loop.index0 }}">
+              <div class="concept-card-overlay d-none"><i class="bi bi-check-circle-fill"></i></div>
+              <div class="display-fields">
+                <h5 class="concept-name">{{ concept.name }}</h5>
+                <p class="concept-description">{{ concept.description }}</p>
+                <div class="concept-excerpt small fst-italic text-muted">Source: {{ concept.source_excerpt[:100] }}...</div>
+                <input type="text" class="form-control concept-domain mt-2" value="{{ concept.domain_tag or '' }}" placeholder="Domain tag">
+              </div>
+              <div class="edit-fields d-none">
+                <input type="text" class="form-control mb-2 edit-name" value="{{ concept.name }}">
+                <textarea class="form-control mb-2 edit-description" rows="3">{{ concept.description }}</textarea>
+                <input type="text" class="form-control concept-domain mb-2" value="{{ concept.domain_tag or '' }}" placeholder="Domain tag">
+                <div class="d-flex gap-2">
+                  <button class="btn btn-sm btn-success" type="button" onclick="saveConcept({{ loop.index0 }});">Save</button>
+                  <button class="btn btn-sm btn-outline-secondary" type="button" onclick="cancelEdit({{ loop.index0 }});">Cancel</button>
+                </div>
+              </div>
+              <div class="mt-2 d-flex gap-2">
+                <button class="btn btn-sm btn-success" type="button" onclick="confirmConcept({{ loop.index0 }});">✓ Confirm</button>
+                <button class="btn btn-sm btn-outline-secondary" type="button" onclick="editConcept({{ loop.index0 }});">✎ Edit</button>
+                <button class="btn btn-sm btn-danger" type="button" onclick="rejectConcept({{ loop.index0 }});">✕ Reject</button>
+              </div>
+            </div>
+          {% endfor %}
+        {% else %}
+          <div class="alert alert-info">AI extraction didn't find specific concepts. Add your own concepts below.</div>
+          {% for i in range(3) %}
+            <div class="concept-card editing" data-index="{{ i }}">
+              <div class="display-fields d-none"></div>
+              <div class="edit-fields">
+                <input type="text" class="form-control mb-2 edit-name" placeholder="Concept name">
+                <textarea class="form-control mb-2 edit-description" rows="3" placeholder="Concept description"></textarea>
+                <input type="text" class="form-control concept-domain mb-2" placeholder="Domain tag">
+                <div class="d-flex gap-2">
+                  <button class="btn btn-sm btn-success" type="button" onclick="saveConcept({{ i }}); conceptsState[{{ i }}].action='confirmed';">Save</button>
+                  <button class="btn btn-sm btn-outline-secondary" type="button" onclick="cancelEdit({{ i }});">Cancel</button>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        {% endif %}
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/concept_extract.js') }}"></script>
+<script>
+  const rawConcepts = {{ concepts | tojson | safe }};
+  const fallbackConcepts = Array.from({length: 3}, () => ({name: '', description: '', domain_tag: '', source_excerpt: '', is_custom: true}));
+  const conceptsData = rawConcepts.length ? rawConcepts : fallbackConcepts;
+  document.addEventListener('DOMContentLoaded', () => {
+    initConcepts(conceptsData);
+    attachHoverHandlers();
+    const showFull = document.getElementById('showFull');
+    const fullContent = document.getElementById('fullContent');
+    const sourceContent = document.getElementById('sourceContent');
+    if (showFull && fullContent && sourceContent) {
+      showFull.addEventListener('click', () => {
+        sourceContent.textContent = fullContent.textContent;
+        showFull.remove();
+      });
+    }
+  });
+</script>
+{% endblock %}

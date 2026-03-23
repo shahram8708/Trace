@@ -1,0 +1,24 @@
+{% extends 'dashboard_base.html' %}
+{% block title %}Review Complete{% endblock %}
+{% block dashboard_content %}
+<div class="card shadow-sm border-0 p-4">
+  <div class="d-flex align-items-center mb-3">
+    <div class="display-6 me-3">🎉</div>
+    <div>
+      <h3 class="fw-bold mb-0">Session Complete</h3>
+      <p class="text-muted mb-0">Great work. Your progress has been saved.</p>
+    </div>
+  </div>
+  <div class="d-flex flex-column flex-md-row gap-3">
+    <div class="flex-fill">
+      <div class="fw-semibold">Streak</div>
+      <div class="h4">🔥 {{ current_user.current_streak_days }} days</div>
+      <div class="text-muted">Longest streak: {{ current_user.longest_streak_days }} days</div>
+    </div>
+  </div>
+  <div class="mt-4 d-flex gap-2">
+    <a class="btn btn-primary" href="{{ url_for('dashboard_bp.dashboard') }}">Back to Dashboard</a>
+    <a class="btn btn-outline-primary" href="{{ url_for('import_bp.hub') }}">Import More Content →</a>
+  </div>
+</div>
+{% endblock %}

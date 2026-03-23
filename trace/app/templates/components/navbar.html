@@ -1,0 +1,26 @@
+<nav class="navbar navbar-expand-lg navbar-light fixed-top navbar-trace">
+  <div class="container">
+    <a class="navbar-brand fw-bold text-brand" href="{{ url_for('main.index') }}">Trace</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto align-items-lg-center">
+        {% if current_user.is_authenticated %}
+          <li class="nav-item d-none d-lg-block"><a class="nav-link" href="{{ url_for('import_bp.hub') }}">Import</a></li>
+          <li class="nav-item d-none d-lg-block"><a class="nav-link" href="{{ url_for('review_bp.hub') }}">Review</a></li>
+          <li class="nav-item me-2"><a class="btn btn-outline-primary" href="{{ url_for('concepts_bp.library') }}">Library</a></li>
+          <li class="nav-item me-2"><a class="btn btn-brand" href="{{ url_for('dashboard_bp.dashboard') }}">Go to Dashboard</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.logout') }}">Log Out</a></li>
+        {% else %}
+          <li class="nav-item d-none d-lg-block"><a class="nav-link" href="{{ url_for('main.how_it_works') }}">How It Works</a></li>
+          <li class="nav-item d-none d-lg-block"><a class="nav-link" href="{{ url_for('main.pricing') }}">Pricing</a></li>
+          <li class="nav-item d-none d-lg-block"><a class="nav-link" href="{{ url_for('main.blog_index') }}">Blog</a></li>
+          <li class="nav-item d-none d-lg-block"><a class="nav-link" href="{{ url_for('main.about') }}">About</a></li>
+          <li class="nav-item me-2"><a class="btn btn-outline-primary" href="{{ url_for('auth.login') }}">Log In</a></li>
+          <li class="nav-item"><a class="btn btn-brand" href="{{ url_for('auth.signup') }}">Start for Free</a></li>
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+</nav>

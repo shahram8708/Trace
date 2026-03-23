@@ -1,0 +1,12 @@
+<!doctype html>
+<html>
+<body style="font-family: Arial, sans-serif; background:#f6f9fc; padding:24px;">
+  <div style="max-width:560px; margin:0 auto; background:#fff; border:1px solid #e5e7eb; border-radius:10px; padding:24px;">
+    <h2 style="margin-top:0; color:#111827;">Your subscription was cancelled</h2>
+    <p style="color:#4b5563;">You'll keep Pro access until {{ cancel_date.strftime('%b %d, %Y') if cancel_date else 'the end of your period' }}.</p>
+    <p style="color:#4b5563;">We're sorry to see you go. If this was a mistake, you can restart anytime from Settings → Billing.</p>
+    <p style="text-align:center; margin:24px 0;"><a href="{{ base_url }}/settings/billing" style="background:#2563eb; color:#fff; padding:12px 18px; border-radius:8px; text-decoration:none;">Manage billing</a></p>
+  </div>
+  <p style="color:#9ca3af; font-size:12px; text-align:center; margin-top:12px;">Sent by Trace • {{ base_url }}</p>
+</body>
+</html>

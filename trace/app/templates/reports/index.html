@@ -1,0 +1,162 @@
+{% extends 'dashboard_base.html' %}
+{% block title %}Weekly Knowledge Report{% endblock %}
+{% block head_extra %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb" class="mb-3">
+  <ol class="breadcrumb mb-0">
+    <li class="breadcrumb-item"><a href="{{ url_for('dashboard_bp.dashboard') }}">Dashboard</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Weekly Report</li>
+  </ol>
+</nav>
+{% endblock %}
+{% block dashboard_content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div>
+    <h2 class="mb-1">Weekly Knowledge Report</h2>
+    <div class="text-muted">{{ report_data.week_start.strftime('%b %d') }} – {{ report_data.week_end.strftime('%b %d, %Y') }}</div>
+  </div>
+  <div class="d-flex gap-2 flex-wrap">
+    <button class="btn btn-outline-secondary" onclick="window.print()"><i class="bi bi-printer me-2"></i>Download as PDF</button>
+    <a class="btn btn-primary" href="{{ url_for('review_bp.session') }}">Start Review Session</a>
+    <a class="btn btn-outline-primary" href="{{ url_for('import_bp.hub') }}">Add More Content</a>
+  </div>
+</div>
+
+<div class="row g-3 mb-3">
+  {% set delta = report_data.reviews_this_week - report_data.reviews_last_week %}
+  <div class="col-md-3"><div class="card stat-card"><div class="card-body"><div class="text-muted small">Concepts Reviewed</div><div class="h4">{{ report_data.reviews_this_week }}</div><div class="text-{{ 'success' if delta>=0 else 'danger' }} small">{{ delta|abs }} {{ 'more' if delta>=0 else 'fewer' }} than last week</div></div></div></div>
+  {% set retention_delta = report_data.overall_retention - report_data.overall_retention_last_week %}
+  <div class="col-md-3"><div class="card stat-card"><div class="card-body"><div class="text-muted small">Overall Retention Change</div><div class="h4">{{ retention_delta|round(1) }}%</div><div class="text-muted small">vs last week</div></div></div></div>
+  <div class="col-md-3"><div class="card stat-card"><div class="card-body"><div class="text-muted small">New Concepts Added</div><div class="h4">{{ report_data.new_concepts|length }}</div><div class="text-muted small">This week</div></div></div></div>
+  <div class="col-md-3"><div class="card stat-card"><div class="card-body"><div class="text-muted small">Current Streak</div><div class="h4">{{ report_data.current_streak }} days</div><div class="text-muted small">Longest {{ report_data.longest_streak }} days</div></div></div></div>
+</div>
+
+<div class="card mb-3">
+  <div class="card-body">
+    <h5 class="mb-3">Knowledge Health by Domain — This Week</h5>
+    {% for domain in report_data.domain_performance %}
+    <div class="d-flex align-items-center mb-2 p-2 rounded {{ 'bg-warning-subtle' if domain.change_percent < 0 else '' }}">
+      <div class="flex-grow-1">
+        <div class="fw-semibold">{{ domain.domain }}</div>
+        <div class="progress" style="height:6px;"><div class="progress-bar" role="progressbar" style="width: {{ (domain.current_avg*100)|round(0) }}%"></div></div>
+      </div>
+      <div class="ms-3 small fw-semibold text-{{ 'danger' if domain.change_percent < 0 else 'success' }}">{{ domain.change_percent }}%</div>
+    </div>
+    {% else %}
+    <p class="text-muted mb-0">Not enough data yet.</p>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="row g-3 mb-3">
+  <div class="col-lg-6">
+    <div class="card h-100">
+      <div class="card-body">
+        <h5>Concept of the Week</h5>
+        {% if report_data.concept_of_week %}
+          <div class="fw-bold">{{ report_data.concept_of_week.name }}</div>
+          <p class="text-muted small">{{ report_data.concept_of_week.description|truncate(180) }}</p>
+          <canvas id="concept-week-chart" height="120"></canvas>
+        {% else %}
+          <p class="text-muted mb-0">Complete a few reviews to unlock this spotlight.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card h-100">
+      <div class="card-body">
+        <h5>Overdue Concepts</h5>
+        {% if report_data.overdue_concepts %}
+          <ul class="list-group list-group-flush">
+            {% for c in report_data.overdue_concepts %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              <div>{{ c.name }} <span class="badge bg-light text-dark ms-2">{{ c.domain }}</span></div>
+              <span class="text-warning small">{{ c.days_overdue }} days overdue</span>
+            </li>
+            {% endfor %}
+          </ul>
+          <div class="mt-2"><a class="btn btn-primary btn-sm" href="{{ url_for('review_bp.hub') }}">Start Review Session</a></div>
+        {% elif report_data.upcoming_due %}
+          <p class="text-muted mb-2">Nothing is overdue. These are next in line:</p>
+          <ul class="list-group list-group-flush">
+            {% for c in report_data.upcoming_due %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              <div>{{ c.name }} <span class="badge bg-light text-dark ms-2">{{ c.domain }}</span></div>
+              <span class="text-muted small">due in {{ c.days_until_due }} days</span>
+            </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="text-muted mb-0">No overdue concepts.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card mb-3">
+  <div class="card-body">
+    <h5>New Concepts This Week</h5>
+    {% if report_data.new_concepts %}
+      <div class="row row-cols-1 row-cols-md-2 g-2">
+        {% for c in report_data.new_concepts %}
+        <div class="col"><div class="p-2 border rounded">{{ c.name }} <span class="badge bg-light text-dark ms-2">{{ c.domain }}</span><div class="small text-muted">{{ c.source_title }}</div></div></div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="text-muted mb-0">No new concepts added this week.</p>
+    {% endif %}
+  </div>
+</div>
+
+<div class="card mb-3">
+  <div class="card-body">
+    <h5 class="mb-2">30-Day Activity</h5>
+    <div class="activity-heatmap">
+      {% for day in report_data.activity_data %}
+      <div class="heat-cell" title="{{ day.date }}: {{ day.count }} reviews" style="--level: {{ day.count }}"></div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-body d-flex justify-content-between align-items-center">
+    <div>
+      <h6 class="mb-1">Share Your Progress</h6>
+      <p class="text-muted mb-0">Copy a quick summary to share with your team.</p>
+    </div>
+    <button class="btn btn-outline-primary" id="copy-summary">Copy Progress Summary</button>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+{{ super() }}
+<script>
+  document.getElementById('copy-summary').addEventListener('click', () => {
+    const summary = `I reviewed {{ report_data.reviews_this_week }} concepts this week and my retention changed by {{ (report_data.overall_retention - report_data.overall_retention_last_week)|round(1) }}%. Current streak: {{ report_data.current_streak }} days.`;
+    navigator.clipboard.writeText(summary);
+  });
+  {% if report_data.concept_of_week %}
+  const ctx = document.getElementById('concept-week-chart');
+  if (ctx) {
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
+        datasets: [{
+          label: 'Reviews',
+          data: [3,2,4,3,5,1,2],
+          backgroundColor: '#1b4f72'
+        }]
+      },
+      options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+    });
+  }
+  {% endif %}
+</script>
+{% endblock %}

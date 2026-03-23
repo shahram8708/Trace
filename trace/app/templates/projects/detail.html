@@ -1,0 +1,143 @@
+{% extends 'dashboard_base.html' %}
+{% block title %}Project {{ project.name }}{% endblock %}
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb" class="mb-3">
+  <ol class="breadcrumb mb-0">
+    <li class="breadcrumb-item"><a href="{{ url_for('dashboard_bp.dashboard') }}">Dashboard</a></li>
+    <li class="breadcrumb-item"><a href="{{ url_for('projects_bp.index') }}">Projects</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{{ project.name }}</li>
+  </ol>
+</nav>
+{% endblock %}
+{% block dashboard_content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div>
+    <h2 class="mb-1">{{ project.name }}</h2>
+    <p class="text-muted mb-0">{{ project.description or 'No description yet.' }}</p>
+    <div class="mt-2">
+      {% for tag in project.domain_tags or [] %}
+        <span class="badge rounded-pill bg-light text-dark me-1">{{ tag }}</span>
+      {% endfor %}
+      <span class="badge {{ 'bg-success' if project.is_active else 'bg-secondary' }}">{{ 'Active' if project.is_active else 'Inactive' }}</span>
+      <span class="badge bg-info">{{ project.reminder_frequency|capitalize }}</span>
+    </div>
+  </div>
+  <div class="d-flex gap-2">
+    <form method="POST" action="{{ url_for('projects_bp.edit', project_id=project.id) }}">
+      {{ form.hidden_tag() }}
+      <input type="hidden" name="name" value="{{ project.name }}">
+      <input type="hidden" name="description" value="{{ project.description }}">
+      {% for tag in project.domain_tags or [] %}
+        <input type="hidden" name="domain_tags" value="{{ tag }}">
+      {% endfor %}
+      <input type="hidden" name="reminder_frequency" value="{{ project.reminder_frequency }}">
+      <input type="hidden" name="is_active" value="{{ 'y' if not project.is_active else '' }}">
+      <button class="btn btn-outline-secondary btn-sm" type="submit">{{ 'Activate' if not project.is_active else 'Pause' }}</button>
+    </form>
+    <form method="POST" action="{{ url_for('projects_bp.delete', project_id=project.id) }}" onsubmit="return confirm('Delete this project?');">
+      {{ form.hidden_tag() }}
+      <button class="btn btn-outline-danger btn-sm" type="submit">Delete</button>
+    </form>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-6">
+    <div class="card h-100">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <h5 class="mb-0">Pending Application Prompts</h5>
+          <span class="badge bg-secondary">{{ pending_prompts|length }}</span>
+        </div>
+        {% if pending_prompts %}
+          {% for event in pending_prompts %}
+          <div class="border rounded p-3 mb-2">
+            <div class="small text-muted mb-1">{{ event.concept.name }} · {{ event.prompted_at.strftime('%b %d, %Y') }}</div>
+            <p class="mb-2">{{ event.prompt_text }}</p>
+            <div class="d-flex gap-2">
+              <button class="btn btn-success btn-sm" data-response="applied" data-event="{{ event.id }}">✓ Applied</button>
+              <button class="btn btn-outline-secondary btn-sm" data-response="not_relevant" data-event="{{ event.id }}">Not Relevant</button>
+              <button class="btn btn-outline-primary btn-sm" data-response="saved_for_later" data-event="{{ event.id }}">Save for Later</button>
+            </div>
+          </div>
+          {% endfor %}
+        {% else %}
+          <p class="text-muted mb-2">No pending prompts right now.</p>
+          <div class="d-flex gap-2 flex-wrap">
+            <a class="btn btn-outline-primary btn-sm" href="{{ url_for('import_bp.hub') }}">Import more content</a>
+            <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('concepts_bp.library') }}">Browse concepts</a>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card h-100">
+      <div class="card-body">
+        <h5 class="mb-2">Concepts from your library relevant to this project</h5>
+        {% if matched_concepts %}
+        <ul class="list-group list-group-flush">
+          {% for concept in matched_concepts %}
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <div>
+              <div class="fw-semibold"><a href="{{ url_for('concepts_bp.detail', concept_id=concept.id) }}">{{ concept.name }}</a></div>
+              <div class="small text-muted">{{ concept.domain_tag or 'Unspecified' }}</div>
+            </div>
+            <div class="text-end">
+              <div class="small text-muted">Retention {{ (concept.retention_strength * 100)|round(0) }}%</div>
+              <div class="small">Last reviewed {{ concept.last_reviewed.strftime('%b %d') if concept.last_reviewed else '—' }}</div>
+            </div>
+          </li>
+          {% endfor %}
+        </ul>
+        {% else %}
+          <p class="text-muted mb-0">No matching concepts yet.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card mt-3">
+  <div class="card-body">
+    <h5 class="mb-3">Application History</h5>
+    {% if history %}
+    <div class="table-responsive">
+      <table class="table table-sm align-middle">
+        <thead><tr><th>Concept</th><th>Prompted</th><th>Response</th></tr></thead>
+        <tbody>
+          {% for event in history %}
+          <tr>
+            <td>{{ event.concept.name if event.concept else 'Concept' }}</td>
+            <td>{{ event.prompted_at.strftime('%b %d, %Y') }}</td>
+            <td>{{ event.user_response or 'Pending' }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+      <p class="text-muted mb-0">No history yet.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+{{ super() }}
+<script>
+  document.querySelectorAll('[data-event]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const eventId = btn.dataset.event;
+      const response = btn.dataset.response;
+      fetch(`{{ url_for('projects_bp.respond', project_id=project.id) }}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'X-CSRFToken': '{{ csrf_token() }}'
+        },
+        body: new URLSearchParams({ application_event_id: eventId, response })
+      }).then(res => res.json()).then(() => window.location.reload());
+    });
+  });
+</script>
+{% endblock %}
