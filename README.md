@@ -12,20 +12,6 @@
 
 ---
 
-## Screenshots / Demo
-
-*(Add screenshots of your application here — include the homepage, the dashboard, and a review session.)*
-
-Based on the templates in the codebase, here's what each key screen looks like:
-
-- **Homepage (`/`)** — A marketing landing page with a hero section explaining the spaced-repetition concept, a "How It Works" section, pricing tiers (Free vs Pro), and calls to action for signup.
-- **Dashboard (`/dashboard`)** — Shows today's due concepts count, overall retention score (0–100%), streak counter, a 7-day review activity bar chart, and a domain-by-domain retention breakdown.
-- **Review Session (`/review/session`)** — A full-screen flashcard interface. One concept at a time is shown, the user writes their recall response, then rates their recall quality (1–5). The SM-2 algorithm immediately schedules the next review.
-- **Knowledge Map (`/map`)** — An interactive force-directed graph (D3.js) showing every concept as a node and AI-suggested connections as edges. Nodes are coloured by retention strength and sized by review count.
-- **Import Hub (`/import`)** — Four import methods in one place: URL, plain text, PDF upload, and Kindle CSV export.
-
----
-
 ## Table of Contents
 
 - [The Problem This Solves](#the-problem-this-solves)
